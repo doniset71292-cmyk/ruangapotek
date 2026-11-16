@@ -28,14 +28,12 @@ const slides = [
     id: 1,
     img: '/dashboard-kasir.png',
     label: 'Tampilan Laptop / PC Kasir',
-    desc: '↑ Tampilan mode trial. Klik obat, langsung masuk keranjang.',
     type: 'laptop',
   },
   {
     id: 2,
     img: '/hp-kasir.png',
     label: 'Tampilan HP - Kasir',
-    desc: '↑ Tampilan di HP. Cari obat, cek stok & Exp, langsung jualan.',
     type: 'hp',
   },
 ];
