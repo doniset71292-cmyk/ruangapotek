@@ -102,7 +102,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
            {current + 1} / {slides.length}
           </div>
 
-          <div style={{...s.sliderWrap, transform: `translateX(-${current * 100}%)`}}>
+          <div style={{ display: 'flex', width: '100%', transition: 'transform 0.7s ease-in-out', transform: `translateX(-${current * 100}%)` }}>
             {slides.map((slide) => (
               <div key={slide.id} style={{minWidth: '100%', textAlign: 'center'}}>
                 <div style={{ 
