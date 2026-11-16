@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const s = {
   page: { minHeight: '100vh', background: '#F0F9F7', fontFamily: 'system-ui, sans-serif', color: '#1e293b', boxSizing: 'border-box' },
@@ -12,18 +12,50 @@ const s = {
   btnPrimary: { background: '#0D9488', color: 'white', border: 'none', padding: '14px 22px', borderRadius: 999, fontWeight: 800, cursor: 'pointer', fontSize: 15, width: '100%' },
   btnSecondary: { background: 'white', border: '1px solid #E2E8F0', padding: '14px 22px', borderRadius: 999, fontWeight: 700, cursor: 'pointer', fontSize: 15, width: '100%' },
   priceBox: { display: 'flex', gap: 16, alignItems: 'center', marginTop: 18 },
-  mockup: { background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.08)' },
+  mockup: { background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', position: 'relative', overflow: 'hidden' },
   stat: { padding: 12, borderRadius: 12, fontSize: 12 },
   fiturGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 16 },
   fiturCard: { background: 'white', borderRadius: 18, padding: 18, textAlign: 'center', boxShadow: '0 1px 5px rgba(0,0,0,0.05)' },
   hargaBox: { background: '#0F766E', color: 'white', borderRadius: 24, padding: 24, textAlign: 'center', marginTop: 20 },
+  // Style baru buat slider
+  sliderWrap: { display: 'flex', transition: 'transform 0.7s ease-in-out' },
+  dot: { width: 10, height: 10, borderRadius: 999, border: 'none', cursor: 'pointer' },
+  arrowBtn: { width: 36, height: 36, borderRadius: 999, border: 'none', background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', cursor: 'pointer', fontSize: 16, fontWeight: 800, color: '#0F766E' },
 };
+
+const slides = [
+  {
+    id: 1,
+    img: '/dashboard-kasir.png',
+    label: 'Tampilan Laptop / PC Kasir',
+    desc: '↑ Tampilan mode trial. Klik obat, langsung masuk keranjang.',
+    type: 'laptop',
+  },
+  {
+    id: 2,
+    img: '/hp-kasir.png',
+    label: 'Tampilan HP - Kasir Apotek Yakrija',
+    desc: '↑ Sama persis di HP. Cari obat, cek stok & Exp, langsung jualan.',
+    type: 'hp',
+  },
+];
 
 export default function LandingRuangApotek({ onCobaKasir }) {
   const [namaApotek, setNamaApotek] = useState("");
+  const [current, setCurrent] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // AUTO SLIDE tiap 4 detik
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isPaused]);
 
   const keWA = () => {
-    const pesan = `Halo RuangApotek, saya ${namaApotek || 'dari Apotek'} mau daftar paketRp 699rb/tahun. Boleh demo 5 menit?`;
+    const pesan = `Halo RuangApotek, saya ${namaApotek || 'dari Apotek'} mau daftar paket Rp 699rb/tahun. Boleh demo 5 menit?`;
     window.open(`https://wa.me/628818352063?text=${encodeURIComponent(pesan)}`, '_blank');
   };
 
@@ -60,16 +92,45 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           <p style={{fontSize: 12, color: '#64748B', marginTop: 10}}>✓ Tanpa kartu kredit &nbsp; ✓ Setup 5 menit &nbsp; ✓ Dukungan WA 24 jam</p>
         </div>
 
-        {/* MOCKUP DASHBOARD */}
-        <div style={s.mockup}>
-         <img 
-            src="/dashboard-kasir.png" 
-            alt="Kasir RuangApotek asli" 
-            style={{ width: '100%', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }} 
-        />
-          <p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', marginTop: 8 }}>
-          ↑ Tampilan mode trial. Klik obat, langsung masuk keranjang.
-          </p></div>
+        {/* MOCKUP DASHBOARD - SUDAH JADI AUTO SLIDER */}
+        <div 
+          style={s.mockup}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div style={{position: 'absolute', top: 12, left: 12, zIndex: 2, background: '#CCFBF1', color: '#0F766E', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 999}}>
+            ▶ Auto Slide • {current + 1} / {slides.length}
+          </div>
+
+          <div style={{...s.sliderWrap, transform: `translateX(-${current * 100}%)`}}>
+            {slides.map((slide) => (
+              <div key={slide.id} style={{minWidth: '100%', textAlign: 'center'}}>
+                <img 
+                  src={slide.img} 
+                  alt={slide.label} 
+                  style={slide.type === 'hp' 
+                    ? { width: '78%', maxWidth: 300, margin: '0 auto', borderRadius: 28, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', border: '4px solid #111827' }
+                    : { width: '100%', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
+                  } 
+                />
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0F766E', marginTop: 10, marginBottom: 2 }}>{slide.label}</p>
+                <p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', margin: 0 }}>{slide.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Panah & Dots */}
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14}}>
+            <button style={s.arrowBtn} onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}>←</button>
+            <div style={{display: 'flex', gap: 6}}>
+              {slides.map((_, i) => (
+                <button key={i} onClick={() => setCurrent(i)} style={{...s.dot, background: i === current ? '#0D9488' : '#CBD5E1', width: i === current ? 24 : 10}} />
+              ))}
+            </div>
+            <button style={{...s.arrowBtn, background: '#0D9488', color: 'white'}} onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}>→</button>
+          </div>
+          <p style={{fontSize: 11, color: '#94A3B8', textAlign: 'center', margin: '8px 0 0'}}>Geser otomatis tiap 4 detik • Klik panah untuk lihat fitur lain</p>
+        </div>
         </div>
 
       {/* FITUR */}
