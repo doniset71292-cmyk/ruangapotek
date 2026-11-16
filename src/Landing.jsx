@@ -12,7 +12,7 @@ const s = {
   btnPrimary: { background: '#0D9488', color: 'white', border: 'none', padding: '14px 22px', borderRadius: 999, fontWeight: 800, cursor: 'pointer', fontSize: 15, width: '100%' },
   btnSecondary: { background: 'white', border: '1px solid #E2E8F0', padding: '14px 22px', borderRadius: 999, fontWeight: 700, cursor: 'pointer', fontSize: 15, width: '100%' },
   priceBox: { display: 'flex', gap: 16, alignItems: 'center', marginTop: 18 },
-  mockup: { background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', position: 'relative', overflow: 'hidden' },
+  mockup: { background: 'white', borderRadius: 20, padding: 0, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', position: 'relative', overflow: 'hidden' },
   stat: { padding: 12, borderRadius: 12, fontSize: 12 },
   fiturGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 16 },
   fiturCard: { background: 'white', borderRadius: 18, padding: 18, textAlign: 'center', boxShadow: '0 1px 5px rgba(0,0,0,0.05)' },
@@ -92,7 +92,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           <p style={{fontSize: 12, color: '#64748B', marginTop: 10}}>✓ Tanpa kartu kredit &nbsp; ✓ Setup 5 menit &nbsp; ✓ Dukungan WA 24 jam</p>
         </div>
 
-        {/* MOCKUP DASHBOARD - SUDAH JADI AUTO SLIDER */}
+        {/* MOCKUP DASHBOARD - AUTO SLIDER */}
         <div 
           style={s.mockup}
           onMouseEnter={() => setIsPaused(true)}
@@ -106,21 +106,24 @@ export default function LandingRuangApotek({ onCobaKasir }) {
             {slides.map((slide) => (
               <div key={slide.id} style={{minWidth: '100%', textAlign: 'center'}}>
                 <div style={{ 
-  height: 360, 
-  display: 'flex', 
-  alignItems: 'center', 
-  justifyContent: 'center', 
-  overflow: 'hidden' 
-}}>
-  <img 
-    src={slide.img} 
-    alt={slide.label} 
-    style={slide.type === 'hp' 
-      ? { height: 360, width: 'auto', maxWidth: 210, objectFit: 'cover', objectPosition: 'top', borderRadius: 28, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', border: '4px solid #111827' }
-      : { height: 360, width: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
-    } 
-  />
-</div>
+                height: 360, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                 overflow: 'hidden',
+                  borderRadius: 0,
+                  margin: 0,
+                  padding: 0, 
+                            }}>
+                <img 
+                 src={slide.img} 
+                 alt={slide.label} 
+                  style={slide.type === 'hp' 
+                ? { height: 360, width: 'auto', maxWidth: 210, objectFit: 'cover', objectPosition: 'top', borderRadius: 28, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', border: '4px solid #111827' }
+                : { height: 360, width: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: 0, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
+                   } 
+                />
+                </div>
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0F766E', marginTop: 10, marginBottom: 2 }}>{slide.label}</p>
                 <p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', margin: 0 }}>{slide.desc}</p>
               </div>
