@@ -34,8 +34,8 @@ const slides = [
   {
     id: 2,
     img: '/hp-kasir.png',
-    label: 'Tampilan HP - Kasir Apotek Yakrija',
-    desc: '↑ Sama persis di HP. Cari obat, cek stok & Exp, langsung jualan.',
+    label: 'Tampilan HP - Kasir',
+    desc: '↑ Tampilan di HP. Cari obat, cek stok & Exp, langsung jualan.',
     type: 'hp',
   },
 ];
@@ -99,20 +99,28 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           onMouseLeave={() => setIsPaused(false)}
         >
           <div style={{position: 'absolute', top: 12, left: 12, zIndex: 2, background: '#CCFBF1', color: '#0F766E', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 999}}>
-            ▶ Auto Slide • {current + 1} / {slides.length}
+           {current + 1} / {slides.length}
           </div>
 
           <div style={{...s.sliderWrap, transform: `translateX(-${current * 100}%)`}}>
             {slides.map((slide) => (
               <div key={slide.id} style={{minWidth: '100%', textAlign: 'center'}}>
-                <img 
-                  src={slide.img} 
-                  alt={slide.label} 
-                  style={slide.type === 'hp' 
-                    ? { width: '78%', maxWidth: 300, margin: '0 auto', borderRadius: 28, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', border: '4px solid #111827' }
-                    : { width: '100%', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
-                  } 
-                />
+                <div style={{ 
+  height: 360, 
+  display: 'flex', 
+  alignItems: 'center', 
+  justifyContent: 'center', 
+  overflow: 'hidden' 
+}}>
+  <img 
+    src={slide.img} 
+    alt={slide.label} 
+    style={slide.type === 'hp' 
+      ? { height: 360, width: 'auto', maxWidth: 210, objectFit: 'cover', objectPosition: 'top', borderRadius: 28, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.18)', border: '4px solid #111827' }
+      : { height: 360, width: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
+    } 
+  />
+</div>
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0F766E', marginTop: 10, marginBottom: 2 }}>{slide.label}</p>
                 <p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', margin: 0 }}>{slide.desc}</p>
               </div>
