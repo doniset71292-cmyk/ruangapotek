@@ -129,18 +129,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
               </div>
             ))}
           </div>
-
-          {/* Panah & Dots */}
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14}}>
-            <button style={s.arrowBtn} onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}>←</button>
-            <div style={{display: 'flex', gap: 6}}>
-              {slides.map((_, i) => (
-                <button key={i} onClick={() => setCurrent(i)} style={{...s.dot, background: i === current ? '#0D9488' : '#CBD5E1', width: i === current ? 24 : 10}} />
-              ))}
-            </div>
-            <button style={{...s.arrowBtn, background: '#0D9488', color: 'white'}} onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}>→</button>
           </div>
-        </div>
         </div>
 
       {/* FITUR */}
