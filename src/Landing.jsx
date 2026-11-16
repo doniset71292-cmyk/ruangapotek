@@ -86,7 +86,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           </div>
 
           <div style={s.priceBox}>
-            <div><div style={{fontSize: 11, color: '#64748B'}}>Hanya</div><div style={{fontSize: 24, fontWeight: 800}}>Rp 2.000<span style={{fontSize: 13, fontWeight: 400}}>/hari</span></div></div>
+            <div><div style={{fontSize: 11, color: '#64748B'}}>Hanya</div><div style={{fontSize: 30, fontWeight: 800}}>Rp 2.000<span style={{fontSize: 13, fontWeight: 400}}>/hari</span></div></div>
             <div><div style={{textDecoration: 'line-through', color: '#94A3B8'}}>Rp 2.880.000/tahun</div><div style={{fontSize: 12, fontWeight: 700, color: '#0F766E'}}>Hemat Rp 2jt++</div></div>
           </div>
           <p style={{fontSize: 12, color: '#64748B', marginTop: 10}}>✓ Tanpa kartu kredit &nbsp; ✓ Setup 5 menit &nbsp; ✓ Dukungan WA 24 jam</p>
@@ -98,7 +98,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div style={{position: 'absolute', top: 12, left: 12, zIndex: 2, background: '#CCFBF1', color: '#0F766E', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 999}}>
+          <div style={{position: 'absolute', top: 12, left: 12, zIndex: 2, background: '#CCFBF1', color: '#0F766E', fontSize: 11, fontWeight: 700, padding: '2px 3px', borderRadius: 999}}>
            {current + 1} / {slides.length}
           </div>
 
@@ -137,7 +137,6 @@ export default function LandingRuangApotek({ onCobaKasir }) {
             </div>
             <button style={{...s.arrowBtn, background: '#0D9488', color: 'white'}} onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}>→</button>
           </div>
-          <p style={{fontSize: 11, color: '#94A3B8', textAlign: 'center', margin: '8px 0 0'}}>Geser otomatis tiap 4 detik • Klik panah untuk lihat fitur lain</p>
         </div>
         </div>
 
