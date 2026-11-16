@@ -54,8 +54,8 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           </div>
 
           <div style={s.priceBox}>
-            <div><div style={{fontSize: 11, color: '#64748B'}}>Hanya</div><div style={{fontSize: 24, fontWeight: 800}}>Rp 699.000 <span style={{fontSize: 13, fontWeight: 400}}>/ tahun</span></div></div>
-            <div><div style={{textDecoration: 'line-through', color: '#94A3B8'}}>Rp 2.880.000</div><div style={{fontSize: 12, fontWeight: 700, color: '#0F766E'}}>Hemat Rp 2jt++ / tahun</div></div>
+            <div><div style={{fontSize: 11, color: '#64748B'}}>Hanya</div><div style={{fontSize: 24, fontWeight: 800}}>Rp 2.000<span style={{fontSize: 13, fontWeight: 400}}>/hari</span></div></div>
+            <div><div style={{textDecoration: 'line-through', color: '#94A3B8'}}>Rp 2.880.000/tahun</div><div style={{fontSize: 12, fontWeight: 700, color: '#0F766E'}}>Hemat Rp 2jt++</div></div>
           </div>
           <p style={{fontSize: 12, color: '#64748B', marginTop: 10}}>✓ Tanpa kartu kredit &nbsp; ✓ Setup 5 menit &nbsp; ✓ Dukungan WA 24 jam</p>
         </div>
@@ -63,14 +63,14 @@ export default function LandingRuangApotek({ onCobaKasir }) {
         {/* MOCKUP DASHBOARD */}
         <div style={s.mockup}>
          <img 
-  src="/dashboard-kasir.png" 
-  alt="Kasir RuangApotek asli" 
-  style={{ width: '100%', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }} 
-/>
-<p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', marginTop: 8 }}>
-  ↑ Ini tampilan asli, bukan contoh. Klik obat, langsung masuk keranjang.
-</p></div>
-      </div>
+            src="/dashboard-kasir.png" 
+            alt="Kasir RuangApotek asli" 
+            style={{ width: '100%', borderRadius: 16, display: 'block', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }} 
+        />
+          <p style={{ fontSize: 12, color: '#64748B', textAlign: 'center', marginTop: 8 }}>
+          ↑ Tampilan mode trial. Klik obat, langsung masuk keranjang.
+          </p></div>
+        </div>
 
       {/* FITUR */}
       <div style={{maxWidth: 1100, margin: '0 auto', padding: '0 14px'}}>
