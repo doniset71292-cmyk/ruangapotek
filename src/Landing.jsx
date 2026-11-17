@@ -83,9 +83,16 @@ export default function LandingRuangApotek({ onCobaKasir }) {
             <button onClick={() => document.getElementById('harga').scrollIntoView({behavior: 'smooth'})} style={s.btnSecondary}>Lihat Harga Promo</button>
           </div>
 
-          <div style={s.priceBox}>
-            <div><div style={{fontSize: 11, color: '#64748B'}}>Hanya</div><div style={{fontSize: 30, fontWeight: 800}}>Rp 2.000<span style={{fontSize: 13, fontWeight: 400}}>/hari</span></div></div>
-            <div><div style={{textDecoration: 'line-through', color: '#94A3B8'}}>Rp 2.880.000/tahun</div><div style={{fontSize: 12, fontWeight: 700, color: '#0F766E'}}>Hemat Rp 2jt++</div></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14, background: 'white', border: '1px solid #E2E8F0', padding: '12px', borderRadius: 14, boxShadow: '0 1px 5px rgba(0,0,0,0.05)' }}>
+            <img src="/yakrija.png" alt="Klinik Pratama Yakrija" style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'contain', background: 'white', flexShrink: 0 }} />
+          <div>
+          <div style={{ fontSize: 12, color: '#1E293B', lineHeight: 1.4 }}>
+            <b>"Akhirnya gak ada lagi obat expired kelewat."</b>
+          </div>
+          <div style={{ fontSize: 11, color: '#64748B', marginTop: 4 }}>
+          ⭐⭐⭐⭐⭐ <b style={{ color: '#B91C1C' }}>Klinik Pratama Yakrija</b> • Slipi, Jakarta Barat • Testimoni Bagian Farmasi
+          </div>
+          </div>
           </div>
           <p style={{fontSize: 12, color: '#64748B', marginTop: 10}}>✓ Tanpa kartu kredit &nbsp; ✓ Setup 5 menit &nbsp; ✓ Dukungan WA 24 jam</p>
         </div>
@@ -141,13 +148,14 @@ export default function LandingRuangApotek({ onCobaKasir }) {
 
         {/* HARGA */}
         <div id="harga" style={s.hargaBox}>
-          <p style={{fontSize: 12, fontWeight: 700, color: '#99F6E4', margin: 0}}>HARGA SPESIAL LAUNCHING .</p>
-          <h2 style={{fontSize: 32, margin: '10px 0 4px'}}>Rp 59.000/bulan, atau</h2>
-          <p style={{color: '#CCFBF1', margin: 0}}>Rp 599.000/tahun — Bayar sekali, pakai 1 tahun penuh</p>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#99F6E4', margin: 0}}>HARGA SPESIAL LAUNCHING • 20 APOTEK PERTAMA</p>
+          <h2 style={{fontSize: 32, margin: '10px 0 4px'}}>Rp. 99.000/bulan, atau</h2>
+          <p style={{color: '#CCFBF1', margin: 0}}>Rp. 999.000/tahun — Bayar sekali untuk setahun penuh</p>
+          <p style={{fontSize: 12, color: '#99F6E4', margin: '6px 0 0'}}>Harga normal Rp 199.000/bulan • Hemat 50% khusus launching</p>
           <div style={{textAlign: 'left', maxWidth: 380, margin: '18px auto', fontSize: 14, lineHeight: 1.8}}>
             ✓ Semua fitur: Kasir, Stok, Expired, Laporan<br/>
             ✓ Bisa dipakai di HP + PC (1 apotek)<br/>
-            ✓ Bisa dipakai tanpa internet<br/>
+            ✓ Tetap jalan walau tanpa internet<br/>
             ✓ Bantuan setup via WA sampai bisa
           </div>
           <button onClick={keWA} style={{width: '100%', maxWidth: 380, background: 'white', color: '#0F766E', border: 'none', padding: '14px', borderRadius: 999, fontWeight: 800, marginTop: 10, cursor: 'pointer'}}>Daftar Sekarang via WA →</button>
