@@ -27,7 +27,7 @@ const slides = [
   {
     id: 1,
     img: '/dashboard-kasir.png',
-    label: 'Tampilan Laptop / PC Kasir',
+    label: 'Tampilan Laptop / PC - Kasir',
     type: 'laptop',
   },
   {
@@ -62,9 +62,9 @@ export default function LandingRuangApotek({ onCobaKasir }) {
       {/* NAV */}
       <div style={s.nav}>
        <div style={{ lineHeight: 1, display: 'inline-block', verticalAlign: 'middle' }}>
-  <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1 }}>Ruang</div>
-  <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1, color: '#0D9488' }}>Apotek</div>
-</div>
+        <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1 }}>Ruang</div>
+        <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.5, lineHeight: 1, color: '#0D9488' }}>Apotek</div>
+        </div>
         <div style={{display: 'flex', gap: 8}}>
           <button onClick={keWA} style={{...s.navBtn, background: 'white', color: '#0F766E', border: '1px solid #E2E8F0'}}>Chat WA</button>
           <button onClick={onCobaKasir} style={s.navBtn}>Masuk →</button>
@@ -142,19 +142,18 @@ export default function LandingRuangApotek({ onCobaKasir }) {
         {/* HARGA */}
         <div id="harga" style={s.hargaBox}>
           <p style={{fontSize: 12, fontWeight: 700, color: '#99F6E4', margin: 0}}>HARGA SPESIAL LAUNCHING .</p>
-          <h2 style={{fontSize: 32, margin: '10px 0 4px'}}>Rp 59.000 / bulan, atau</h2>
-          <p style={{color: '#CCFBF1', margin: 0}}>Rp 699.000 / tahun — Bayar sekali, pakai 1 tahun penuh</p>
+          <h2 style={{fontSize: 32, margin: '10px 0 4px'}}>Rp 59.000/bulan, atau</h2>
+          <p style={{color: '#CCFBF1', margin: 0}}>Rp 599.000/tahun — Bayar sekali, pakai 1 tahun penuh</p>
           <div style={{textAlign: 'left', maxWidth: 380, margin: '18px auto', fontSize: 14, lineHeight: 1.8}}>
             ✓ Semua fitur: Kasir, Stok, Expired, Laporan<br/>
             ✓ Bisa dipakai di HP + PC (1 apotek)<br/>
             ✓ Bisa dipakai tanpa internet<br/>
             ✓ Bantuan setup via WA sampai bisa
           </div>
-          <input value={namaApotek} onChange={e => setNamaApotek(e.target.value)} placeholder="Nama apotek kamu, contoh: Apotek Sehat" style={{width: '100%', maxWidth: 380, padding: '12px 14px', borderRadius: 999, border: 'none', outline: 'none', boxSizing: 'border-box'}} />
           <button onClick={keWA} style={{width: '100%', maxWidth: 380, background: 'white', color: '#0F766E', border: 'none', padding: '14px', borderRadius: 999, fontWeight: 800, marginTop: 10, cursor: 'pointer'}}>Daftar Sekarang via WA →</button>
           <p style={{fontSize: 11, color: '#99F6E4', marginTop: 10}}>1 obat expired yang terselamatkan = aplikasi sudah gratis.</p>
         </div>
-        <p style={{textAlign: 'center', fontSize: 11, color: '#94A3B8', padding: '20px 0'}}>© 2026 RuangApotek • Dibuat untuk Apotek di seluruh Indonesia</p>
+        <p style={{textAlign: 'center', fontSize: 11, color: '#94A3B8', padding: '20px 0'}}>© 2026 RuangApotek • untuk Apotek di seluruh Indonesia</p>
       </div>
     </div>
   );

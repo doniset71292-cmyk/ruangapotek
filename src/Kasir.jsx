@@ -111,7 +111,6 @@ export default function Kasir() {
 </div>
           <button onClick={() => setSidebarOpen(false)} style={{ border: 'none', background: '#F1F5F9', borderRadius: 999, padding: '6px 10px', cursor: 'pointer' }}>✕</button>
         </div>
-        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • Offline • v2.0</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {menu.map(m => (
             <button key={m.id} onClick={() => { setHalaman(m.id); setSidebarOpen(false); }} style={{ textAlign: 'left', padding: '12px', borderRadius: 12, border: 'none', background: halaman === m.id ? '#0D9488' : '#F8FAFC', color: halaman === m.id ? 'white' : '#1e293b', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
