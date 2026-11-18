@@ -4,9 +4,7 @@ const OBAT_AWAL = [
   { id: 1, nama: 'Paracetamol 500mg', kategori: 'Demam', harga: 5000, stok: 120, exp: '12/2027' },
   { id: 2, nama: 'Amoxicillin 500mg', kategori: 'Antibiotik', harga: 15000, stok: 18, exp: '02/2027' },
   { id: 3, nama: 'Promag Tablet', kategori: 'Lambung', harga: 8000, stok: 45, exp: '08/2027' },
-  { id: 4, nama: 'Bodrex Extra', kategori: 'Demam', harga: 6000, stok: 80, exp: '10/2027' },
-  { id: 5, nama: 'Tolakangin Cair', kategori: 'Herbal', harga: 12000, stok: 30, exp: '05/2027' },
-  { id: 6, nama: 'Betadine 60ml', kategori: 'Luka', harga: 18000, stok: 12, exp: '11/2026' },
+  { id: 4, nama: 'Betadine 60ml', kategori: 'Luka', harga: 18000, stok: 12, exp: '11/2026' },
 ];
 
 export default function Kasir() {
@@ -30,8 +28,20 @@ export default function Kasir() {
   const [formObat, setFormObat] = useState({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' });
   const [editId, setEditId] = useState(null);
 
+  // === BARU: PO / FAKTUR ===
+  const [poList, setPoList] = useState(() => {
+    const s = localStorage.getItem('ruangapotek_po');
+    return s ? JSON.parse(s) : [];
+  });
+  const [poForm, setPoForm] = useState({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
+
+  // === BARU: LAPORAN SUHU ===
+  const logSuhu = JSON.parse(localStorage.getItem('log_suhu') || '[]');
+  const [filterSuhu, setFilterSuhu] = useState('Semua');
+
   useEffect(() => { localStorage.setItem('ruangapotek_obats', JSON.stringify(obats)); }, [obats]);
   useEffect(() => { localStorage.setItem('ruangapotek_transaksi', JSON.stringify(transaksis)); }, [transaksis]);
+  useEffect(() => { localStorage.setItem('ruangapotek_po', JSON.stringify(poList)); }, [poList]);
 
   const obatTampil = useMemo(() => obats.filter(o => o.nama.toLowerCase().includes(cari.toLowerCase())), [obats, cari]);
   const total = cart.reduce((a, c) => a + c.harga * c.qty, 0);
@@ -76,6 +86,30 @@ export default function Kasir() {
     setEditId(null); setHalaman('stok');
   };
 
+  // === FUNGSI PO: SIMPAN FAKTUR + OTOMATIS TAMBAH STOK ===
+  const simpanPO = () => {
+    if (!poForm.noFaktur) return alert('Isi No. Faktur dulu!');
+    if (!poForm.items[0].nama) return alert('Isi minimal 1 obat!');
+    const totalPO = poForm.items.reduce((s, it) => s + (Number(it.qty) * Number(it.hargaBeli || 0)), 0);
+    const poBaru = { ...poForm, tanggal: new Date().toLocaleDateString('id-ID'), total: totalPO, status: 'BELUM LUNAS', id: Date.now() };
+    setPoList([poBaru, ...poList]);
+
+    // TAMBAH STOK KE OBATS YANG SAMA - INI KUNCINYA
+    let obatsBaru = [...obats];
+    poForm.items.forEach(it => {
+      const idx = obatsBaru.findIndex(o => o.nama.toLowerCase() === it.nama.toLowerCase());
+      if (idx >= 0) {
+        obatsBaru[idx] = { ...obatsBaru[idx], stok: obatsBaru[idx].stok + Number(it.qty), exp: it.exp ? it.exp.split('-').reverse().join('/').slice(3) : obatsBaru[idx].exp };
+      } else {
+        obatsBaru.push({ id: Date.now() + Math.random(), nama: it.nama, kategori: 'Lainnya', harga: Number(it.hargaBeli) * 1.5, stok: Number(it.qty), exp: it.exp ? it.exp.slice(5,7) + '/' + it.exp.slice(0,4) : '12/2027' });
+      }
+    });
+    setObats(obatsBaru);
+    alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis nambah, langsung bisa dijual di Kasir.`);
+    setPoForm({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
+    setHalaman('po');
+  };
+
   // Laporan
   const hariIni = new Date().toISOString().slice(0, 10);
   const trxHariIni = transaksis.filter(t => t.tanggalRaw === hariIni);
@@ -86,10 +120,15 @@ export default function Kasir() {
     return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [transaksis]);
 
+  const hutangPO = poList.filter(p => p.status === 'BELUM LUNAS');
+  const totalHutang = hutangPO.reduce((s, p) => s + p.total, 0);
+
   const menu = [
     { id: 'kasir', label: '🛒 Kasir', desc: 'Jualan' },
     { id: 'tambah', label: '➕ Tambah Obat', desc: 'Obat baru' },
     { id: 'stok', label: '📦 Kelola Stok', desc: `${obats.length} obat` },
+    { id: 'po', label: '📦 PO / Faktur', desc: hutangPO.length ? `${hutangPO.length} belum lunas` : 'Input faktur' },
+    { id: 'suhu', label: '🌡️ Laporan Suhu', desc: `${logSuhu.length} catatan` },
     { id: 'riwayat', label: '🧾 Riwayat', desc: `${transaksis.length} transaksi` },
     { id: 'laporan', label: '📊 Laporan', desc: 'Omset hari ini' },
   ];
@@ -103,14 +142,15 @@ export default function Kasir() {
       <div style={{ width: 240, background: 'white', borderRight: '1px solid #E2E8F0', padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-  <div style={{ width: 36, height: 36, background: '#0D9488', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>➕</div>
-  <div style={{ lineHeight: 1 }}>
-    <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5 }}>Ruang</div>
-    <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5, color: '#0D9488' }}>Apotek</div>
-  </div>
-</div>
+            <div style={{ width: 36, height: 36, background: '#0D9488', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>➕</div>
+            <div style={{ lineHeight: 1 }}>
+              <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5 }}>Ruang</div>
+              <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5, color: '#0D9488' }}>Apotek</div>
+            </div>
+          </div>
           <button onClick={() => setSidebarOpen(false)} style={{ border: 'none', background: '#F1F5F9', borderRadius: 999, padding: '6px 10px', cursor: 'pointer' }}>✕</button>
         </div>
+        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • Offline • v2.0</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {menu.map(m => (
             <button key={m.id} onClick={() => { setHalaman(m.id); setSidebarOpen(false); }} style={{ textAlign: 'left', padding: '12px', borderRadius: 12, border: 'none', background: halaman === m.id ? '#0D9488' : '#F8FAFC', color: halaman === m.id ? 'white' : '#1e293b', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -122,6 +162,7 @@ export default function Kasir() {
         <div style={{ marginTop: 'auto', background: '#FFFBEB', borderRadius: 12, padding: 12 }}>
           <b style={{ fontSize: 12 }}>⚠️ Obat mau expired</b>
           <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => o.exp.includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
+          {hutangPO.length > 0 && <p style={{ fontSize: 12, margin: '8px 0 0', color: '#92400E', fontWeight: 700 }}>💸 Hutang PO: Rp {totalHutang.toLocaleString('id-ID')} ({hutangPO.length} faktur)</p>}
         </div>
       </div>
 
@@ -132,9 +173,14 @@ export default function Kasir() {
           <span style={{ background: '#FFEDD5', color: '#9A3412', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● OFFLINE</span>
         </div>
 
-        {/* === HALAMAN KASIR === */}
+        {/* === HALAMAN KASIR (TETAP SAMA) === */}
         {halaman === 'kasir' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
+            {hutangPO.length > 0 && (
+              <div onClick={() => setHalaman('po')} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', padding: 12, borderRadius: 14, fontSize: 13, color: '#92400E', cursor: 'pointer' }}>
+                ⚠️ <b>{hutangPO.length} Faktur belum lunas</b> • Total hutang Rp {totalHutang.toLocaleString('id-ID')} • Klik untuk lihat →
+              </div>
+            )}
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
               <h2 style={{ margin: '0 0 12px' }}>Kasir</h2>
               <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
@@ -165,12 +211,24 @@ export default function Kasir() {
               <input value={bayar} onChange={e => setBayar(e.target.value.replace(/[^0-9]/g, ''))} placeholder="Total bayar, contoh: 50000" style={{ ...inp, marginTop: 10, borderRadius: 999 }} />
               {bayar && <p style={{ fontSize: 13 }}>Kembalian: <b style={{ color: kembalian < 0 ? '#DC2626' : '#15803D' }}>Rp {kembalian.toLocaleString('id-ID')}</b></p>}
               <button onClick={checkout} style={{ ...btnTeal, width: '100%', marginTop: 8, padding: 14 }}>BAYAR & CETAK RESEP →</button>
-              {strukTerakhir && <div style={{ background: '#F0FDF4', padding: 12, borderRadius: 12, marginTop: 12, fontSize: 13 }}><b>✅ Berhasil! {strukTerakhir.id}</b><br/>Total Rp {strukTerakhir.total.toLocaleString('id-ID')} • Kembalian Rp {strukTerakhir.kembalian.toLocaleString('id-ID')}</div>}
+              {strukTerakhir && (
+                <div style={{ background: '#F0FDF4', padding: 12, borderRadius: 12, marginTop: 12, fontSize: 13 }}>
+                  <b>✅ Berhasil! {strukTerakhir.id}</b><br/>Total Rp {strukTerakhir.total.toLocaleString('id-ID')} • Kembalian Rp {strukTerakhir.kembalian.toLocaleString('id-ID')}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                    <button onClick={() => {
+                      const pesan = `KLINIK PRATAMA YAKRIJA\nNo: ${strukTerakhir.id}\n${strukTerakhir.items.map(i => `${i.nama} x${i.qty} = Rp ${(i.harga*i.qty).toLocaleString('id-ID')}`).join('\n')}\nTOTAL: Rp ${strukTerakhir.total.toLocaleString('id-ID')}\nBukti QRIS via EDC terpisah.\nTerima kasih :)`;
+                      window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, '_blank');
+                    }} style={{ flex: 1, background: '#25D366', color: 'white', border: 'none', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>💬 Kirim Struk WA</button>
+                    <button onClick={() => window.print()} style={{ flex: 1, background: 'white', border: '1px solid #E2E8F0', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>🖨️ Simpan PDF</button>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#64748B', margin: '8px 0 0', textAlign: 'center' }}>Bukti bayar QRIS sudah di-print via EDC. Ini untuk rincian obat.</p>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* === TAMBAH OBAT === */}
+        {/* === TAMBAH OBAT (TETAP SAMA) === */}
         {halaman === 'tambah' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
             <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
@@ -189,7 +247,7 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === KELOLA STOK === */}
+        {/* === KELOLA STOK (TETAP SAMA) === */}
         {halaman === 'stok' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 style={{ margin: 0 }}>📦 Kelola Stok Obat</h2><button onClick={() => setHalaman('tambah')} style={btnTeal}>+ Obat Baru</button></div>
@@ -207,7 +265,106 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === RIWAYAT === */}
+        {/* === BARU: PO / FAKTUR - NYAMBUNG KE STOK === */}
+        {halaman === 'po' && (
+          <div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ background: 'white', borderRadius: 16, padding: 16, flex: 1, minWidth: 160 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Hutang (Belum Lunas)</div><b style={{ fontSize: 20, color: '#DC2626' }}>Rp {totalHutang.toLocaleString('id-ID')}</b></div>
+              <div style={{ background: 'white', borderRadius: 16, padding: 16, flex: 1, minWidth: 160 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Faktur</div><b style={{ fontSize: 20 }}>{poList.length} Faktur</b></div>
+            </div>
+
+            <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
+              <h2 style={{ marginTop: 0 }}>📦 Input Faktur Baru</h2>
+              <label style={{ fontSize: 12, fontWeight: 700 }}>NO. FAKTUR (dari kertas PBF)</label>
+              <input value={poForm.noFaktur} onChange={e => setPoForm({ ...poForm, noFaktur: e.target.value })} placeholder="Contoh: FK-INV-8821" style={{ ...inp, margin: '6px 0 12px' }} />
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700 }}>SUPPLIER / PBF</label>
+                  <select value={poForm.supplier} onChange={e => setPoForm({ ...poForm, supplier: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }}>
+                    <option>PT. Kimia Farma Trading</option><option>PT. Anugerah Pharmindo Lestari</option><option>PT. Enseval Putera Megatrading</option><option>PT. Millenium Pharmacon International</option><option>PT. Parit Padang Global</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1, minWidth: 160 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700 }}>JATUH TEMPO</label>
+                  <input type="date" value={poForm.jatuhTempo} onChange={e => setPoForm({ ...poForm, jatuhTempo: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }} />
+                </div>
+              </div>
+
+              <b style={{ fontSize: 13 }}>Daftar Obat di Faktur</b>
+              {poForm.items.map((it, idx) => (
+                <div key={idx} style={{ background: '#F8FAFC', padding: 12, borderRadius: 12, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <input list="daftar-obat" placeholder="Nama Obat - ketik, stok otomatis bertambah" value={it.nama} onChange={e => { const c = [...poForm.items]; c[idx].nama = e.target.value; setPoForm({ ...poForm, items: c }); }} style={inp} />
+                  <datalist id="daftar-obat">{obats.map(o => <option key={o.id} value={o.nama} />)}</datalist>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input type="number" placeholder="Qty" value={it.qty} onChange={e => { const c = [...poForm.items]; c[idx].qty = e.target.value; setPoForm({ ...poForm, items: c }); }} style={{ ...inp, flex: 1 }} />
+                    <input type="number" placeholder="Harga Beli / pcs" value={it.hargaBeli} onChange={e => { const c = [...poForm.items]; c[idx].hargaBeli = e.target.value; setPoForm({ ...poForm, items: c }); }} style={{ ...inp, flex: 1.5 }} />
+                    <input type="date" value={it.exp} onChange={e => { const c = [...poForm.items]; c[idx].exp = e.target.value; setPoForm({ ...poForm, items: c }); }} style={{ ...inp, flex: 1 }} />
+                  </div>
+                </div>
+              ))}
+              <button onClick={() => setPoForm({ ...poForm, items: [...poForm.items, { nama: '', qty: 1, hargaBeli: '', exp: '' }] })} style={{ width: '100%', padding: 10, border: '1px dashed #0D9488', background: 'white', color: '#0D9488', borderRadius: 999, fontWeight: 700, cursor: 'pointer', marginTop: 10 }}>+ Tambah Obat Lagi</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, background: '#0F172A', color: 'white', padding: 14, borderRadius: 12 }}>
+                <div><div style={{ fontSize: 11, opacity: 0.7 }}>TOTAL FAKTUR</div><b style={{ fontSize: 18 }}>Rp {poForm.items.reduce((s, it) => s + (Number(it.qty) * Number(it.hargaBeli || 0)), 0).toLocaleString('id-ID')}</b></div>
+                <button onClick={simpanPO} style={btnTeal}>Simpan & Tambah Stok →</button>
+              </div>
+            </div>
+
+            <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
+              <b>📋 Daftar Faktur</b>
+              {poList.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada faktur. Input faktur pertama di atas ya.</p> : poList.map(p => (
+                <div key={p.id} style={{ border: '1px solid #F1F5F9', borderRadius: 12, padding: 12, marginTop: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <div><b>{p.noFaktur}</b> • {p.supplier}<div style={{ fontSize: 12, color: '#64748B' }}>Tgl: {p.tanggal} • Jatuh Tempo: {p.jatuhTempo || '-'} • {p.items.length} obat</div></div>
+                    <div style={{ textAlign: 'right' }}><b>Rp {p.total.toLocaleString('id-ID')}</b><div>{p.status === 'LUNAS' ? <span style={{ background: '#D1FAE5', color: '#065F46', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>✅ LUNAS</span> : <span style={{ background: '#FEF3C7', color: '#92400E', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>⏳ BELUM LUNAS</span>}</div></div>
+                  </div>
+                  <div style={{ fontSize: 12, marginTop: 8, background: '#F8FAFC', padding: 8, borderRadius: 8 }}>{p.items.map((it, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}><span>{it.nama} x{it.qty}</span><span>Rp {(Number(it.qty) * Number(it.hargaBeli || 0)).toLocaleString('id-ID')}</span></div>)}</div>
+                  {p.status !== 'LUNAS' && <button onClick={() => setPoList(poList.map(x => x.id === p.id ? { ...x, status: 'LUNAS' } : x))} style={{ marginTop: 8, background: '#0D9488', color: 'white', border: 'none', padding: '8px 14px', borderRadius: 999, fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>✓ Tandai Lunas</button>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* === BARU: LAPORAN SUHU - NYAMBUNG KE BARCODE === */}
+        {halaman === 'suhu' && (
+          <div>
+            <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <div><h2 style={{ margin: 0 }}>🌡️ Laporan Suhu Harian</h2><p style={{ margin: '4px 0 0', color: '#64748B', fontSize: 12 }}>Data dari scan barcode di ruangan • Untuk audit Dinas Kesehatan</p></div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => window.open('/cetak-barcode-suhu', '_blank')} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>🖨️ Cetak Barcode</button>
+                  <button onClick={() => {
+                    const header = 'Tanggal,Jam,Ruangan,Suhu,Kelembaban,Petugas,Shift,Status\n';
+                    const rows = logSuhu.map(d => `${d.tanggal},${d.jam},${d.ruangan},${d.suhu},${d.lembab || ''},${d.nama},${d.shift},${d.status}`).join('\n');
+                    const blob = new Blob(['\ufeff' + header + rows], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'Laporan-Suhu-Yakrija.csv'; a.click();
+                  }} style={btnTeal}>⬇️ Download Excel</button>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+                <div style={{ background: '#F0FDF4', padding: '10px 14px', borderRadius: 12, flex: 1 }}><b style={{ color: '#059669' }}>{logSuhu.filter(d => d.status === 'SESUAI').length} Sesuai</b><div style={{ fontSize: 11, color: '#64748B' }}>Suhu 15-25°C</div></div>
+                <div style={{ background: '#FEF2F2', padding: '10px 14px', borderRadius: 12, flex: 1 }}><b style={{ color: '#DC2626' }}>{logSuhu.filter(d => d.status === 'TIDAK SESUAI').length} Tidak Sesuai</b><div style={{ fontSize: 11, color: '#64748B' }}>Perlu tindakan</div></div>
+                <select value={filterSuhu} onChange={e => setFilterSuhu(e.target.value)} style={{ padding: '10px', borderRadius: 12, border: '1px solid #E2E8F0' }}><option>Semua</option><option>Ruang Racik</option><option>Gudang Obat</option></select>
+              </div>
+            </div>
+            <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
+              {logSuhu.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 20 }}>
+                  <div style={{ fontSize: 40 }}>🌡️</div>
+                  <b>Belum ada data suhu</b>
+                  <p style={{ color: '#64748B', fontSize: 13 }}>Cetak barcode & tempel di dinding, petugas tinggal scan tiap ganti shift.</p>
+                  <button onClick={() => window.open('/cetak-barcode-suhu', '_blank')} style={btnTeal}>🖨️ Cetak Barcode Sekarang →</button>
+                </div>
+              ) : logSuhu.filter(d => filterSuhu === 'Semua' || d.ruangan === filterSuhu).map((d, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F1F5F9', flexWrap: 'wrap', gap: 8 }}>
+                  <div><b>{d.ruangan}</b><div style={{ fontSize: 12, color: '#64748B' }}>{d.tanggal} • {d.jam} • {d.nama} • {d.shift}</div></div>
+                  <div style={{ textAlign: 'right' }}><b style={{ color: d.status === 'TIDAK SESUAI' ? '#DC2626' : '#0F766E' }}>{d.suhu}°C</b> <span style={{ fontSize: 12, color: '#64748B' }}>{d.lembab ? `• ${d.lembab}%` : ''}</span><div>{d.status === 'SESUAI' ? <span style={{ background: '#D1FAE5', color: '#065F46', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>✅ SESUAI</span> : <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>⚠️ TIDAK SESUAI</span>}</div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* === RIWAYAT (TETAP SAMA) === */}
         {halaman === 'riwayat' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
@@ -225,13 +382,16 @@ export default function Kasir() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}><span>Total</span><b>Rp {detailTransaksi.total.toLocaleString('id-ID')}</b></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}><span>Bayar</span><span>Rp {detailTransaksi.bayar.toLocaleString('id-ID')}</span></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}><span>Kembalian</span><span>Rp {detailTransaksi.kembalian.toLocaleString('id-ID')}</span></div>
-                <button onClick={() => window.print()} style={{ ...btnTeal, width: '100%', marginTop: 12 }}>🖨️ Cetak Struk Ini</button>
+                <button onClick={() => {
+                  const pesan = `KLINIK PRATAMA YAKRIJA\nNo: ${detailTransaksi.id}\n${detailTransaksi.items.map(i => `${i.nama} x${i.qty} = Rp ${(i.harga*i.qty).toLocaleString('id-ID')}`).join('\n')}\nTOTAL: Rp ${detailTransaksi.total.toLocaleString('id-ID')}`;
+                  window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, '_blank');
+                }} style={{ background: '#25D366', color: 'white', border: 'none', padding: 12, borderRadius: 999, width: '100%', marginTop: 12, fontWeight: 800, cursor: 'pointer' }}>💬 Kirim Ulang Via WA</button>
               </div>
             )}
           </div>
         )}
 
-        {/* === LAPORAN HARIAN === */}
+        {/* === LAPORAN HARIAN (TETAP SAMA) === */}
         {halaman === 'laporan' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -257,7 +417,6 @@ export default function Kasir() {
         <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 20 }}>RuangApotek v2.0 • Data tersimpan di HP ini • Offline</p>
       </div>
 
-      {/* OVERLAY HP */}
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 40 }}></div>}
     </div>
   );

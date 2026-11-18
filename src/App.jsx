@@ -2,8 +2,12 @@ import { useState } from 'react';
 import Landing from './Landing.jsx';
 import Login from './Login.jsx';
 import Kasir from './Kasir.jsx';
+import SuhuHarian from './SuhuHarian.jsx';
+import CetakBarcodeSuhu from './CetakBarcodeSuhu.jsx';
 
 export default function App() {
+  if (window.location.pathname === '/suhu') return <SuhuHarian />;
+  if (window.location.pathname === '/cetak-barcode-suhu') return <CetakBarcodeSuhu />;
   const [halaman, setHalaman] = useState('landing');
   const [namaApotekLogin, setNamaApotekLogin] = useState(() => {
     const s = localStorage.getItem('ruangapotek_login');
@@ -27,9 +31,10 @@ export default function App() {
       />
     );
   }
-
+ 
   // KASIR - Harus login dulu
   return (
+    
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'white', fontFamily: 'system-ui' }}>
         <span style={{ fontSize: 13 }}>👋 Halo, <b>{namaApotekLogin || 'Apotek'}</b></span>
