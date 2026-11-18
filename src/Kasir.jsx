@@ -160,7 +160,7 @@ export default function Kasir() {
           ))}
         </div>
         <div style={{ marginTop: 'auto', background: '#FFFBEB', borderRadius: 12, padding: 12 }}>
-          <b style={{ fontSize: 12 }}>⚠️ Obat mau expired</b>
+          <b style={{ fontSize: 12 }}>⚠️ Obat hampir expired</b>
           <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => o.exp.includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
           {hutangPO.length > 0 && <p style={{ fontSize: 12, margin: '8px 0 0', color: '#92400E', fontWeight: 700 }}>💸 Hutang PO: Rp {totalHutang.toLocaleString('id-ID')} ({hutangPO.length} faktur)</p>}
         </div>
@@ -170,7 +170,7 @@ export default function Kasir() {
       <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
-          <span style={{ background: '#FFEDD5', color: '#9A3412', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● OFFLINE</span>
+          <span style={{ background: '#FFEDD5', color: '#9A3412', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Trial mode</span>
         </div>
 
         {/* === HALAMAN KASIR (TETAP SAMA) === */}
@@ -217,7 +217,7 @@ export default function Kasir() {
                   <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                     <button onClick={() => {
                       const pesan = `KLINIK PRATAMA YAKRIJA\nNo: ${strukTerakhir.id}\n${strukTerakhir.items.map(i => `${i.nama} x${i.qty} = Rp ${(i.harga*i.qty).toLocaleString('id-ID')}`).join('\n')}\nTOTAL: Rp ${strukTerakhir.total.toLocaleString('id-ID')}\nBukti QRIS via EDC terpisah.\nTerima kasih :)`;
-                      window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, '_blank');
+                      window.open(`https://wa.me/628818352063?text=${encodeURIComponent(pesan)}`, '_blank');
                     }} style={{ flex: 1, background: '#25D366', color: 'white', border: 'none', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>💬 Kirim Struk WA</button>
                     <button onClick={() => window.print()} style={{ flex: 1, background: 'white', border: '1px solid #E2E8F0', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>🖨️ Simpan PDF</button>
                   </div>
@@ -325,7 +325,7 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === BARU: LAPORAN SUHU - NYAMBUNG KE BARCODE === */}
+        {/* === LAPORAN SUHU - NYAMBUNG KE BARCODE === */}
         {halaman === 'suhu' && (
           <div>
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
@@ -364,7 +364,7 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === RIWAYAT (TETAP SAMA) === */}
+        {/* === RIWAYAT === */}
         {halaman === 'riwayat' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
@@ -384,14 +384,14 @@ export default function Kasir() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}><span>Kembalian</span><span>Rp {detailTransaksi.kembalian.toLocaleString('id-ID')}</span></div>
                 <button onClick={() => {
                   const pesan = `KLINIK PRATAMA YAKRIJA\nNo: ${detailTransaksi.id}\n${detailTransaksi.items.map(i => `${i.nama} x${i.qty} = Rp ${(i.harga*i.qty).toLocaleString('id-ID')}`).join('\n')}\nTOTAL: Rp ${detailTransaksi.total.toLocaleString('id-ID')}`;
-                  window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, '_blank');
+                  window.open(`https://wa.me/628818352063?text=${encodeURIComponent(pesan)}`, '_blank');
                 }} style={{ background: '#25D366', color: 'white', border: 'none', padding: 12, borderRadius: 999, width: '100%', marginTop: 12, fontWeight: 800, cursor: 'pointer' }}>💬 Kirim Ulang Via WA</button>
               </div>
             )}
           </div>
         )}
 
-        {/* === LAPORAN HARIAN (TETAP SAMA) === */}
+        {/* === LAPORAN HARIAN === */}
         {halaman === 'laporan' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>

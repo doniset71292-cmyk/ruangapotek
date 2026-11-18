@@ -13,7 +13,7 @@ export default function CetakBarcodeSuhu() {
           <img src="/yakrija.png" style={{ width: 50, objectFit: 'contain' }} />
           <h3 style={{ margin: '8px 0 2px' }}>SCAN UNTUK LAPOR SUHU</h3>
           <p style={{ margin: 0, fontWeight: 800, color: '#B91C1C' }}>{item.ruangan} • Klinik Pratama Yakrija</p>
-          <div style={{ margin: '16px 0' }}><QRCodeSVG value={item.link} size={180} /></div>
+          <div style={{ margin: '16px 0', alignItems: 'center', justifyContent: 'center', display: 'flex' }}><QRCodeSVG value={item.link} size={180} /></div>
           <p style={{ fontSize: 12, color: '#64748B' }}>Scan tiap ganti shift<br/>Pagi • Siang • Malam</p>
           <p style={{ fontSize: 10, color: '#94A3B8' }}>{item.link}</p>
         </div>
