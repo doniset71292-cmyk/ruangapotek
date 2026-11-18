@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { supabase } from './supabase';
 
 const OBAT_AWAL = [
@@ -143,7 +143,7 @@ export default function Kasir() {
     let obatsBaru = [...obats];
     for (const it of poForm.items) {
       const idx = obatsBaru.findIndex(o => o.nama.toLowerCase() === it.nama.toLowerCase());
-      const expBaru = it.exp ? it.exp.split('-').reverse().join('/').slice(3) : '12/2027';
+      const expBaru = it.exp ? it.exp.split('-').reverse().join('/').slice(3) : '2027-12-01';
       if (idx >= 0) {
         const stokBaru = obatsBaru[idx].stok + Number(it.qty);
         await supabase.from('obat').update({ stok: stokBaru, expired: expBaru }).eq('id', obatsBaru[idx].id);
@@ -154,7 +154,7 @@ export default function Kasir() {
       }
     }
     setObats(obatsBaru);
-    alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis nambah, langsung bisa dijual di Kasir.`);
+    alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis bertambah, langsung bisa dijual di Kasir.`);
     setPoForm({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
     setHalaman('po');
   };
@@ -172,7 +172,7 @@ export default function Kasir() {
   const totalHutang = hutangPO.reduce((s, p) => s + p.total, 0);
 
   const menu = [
-    { id: 'kasir', label: '🛒 Kasir', desc: 'Jualan' },
+    { id: 'kasir', label: '🛒 Kasir', desc: 'Penualan' },
     { id: 'tambah', label: '➕ Tambah Obat', desc: 'Obat baru' },
     { id: 'stok', label: '📦 Kelola Stok', desc: `${obats.length} obat` },
     { id: 'po', label: '📦 PO / Faktur', desc: hutangPO.length ? `${hutangPO.length} belum lunas` : 'Input faktur' },
@@ -279,13 +279,13 @@ export default function Kasir() {
             <label style={{ fontSize: 12, fontWeight: 700 }}>NAMA OBAT</label><input value={formObat.nama} onChange={e => setFormObat({ ...formObat, nama: e.target.value })} placeholder="Cth: Paracetamol 500mg" style={{ ...inp, margin: '6px 0 12px' }} />
             <label style={{ fontSize: 12, fontWeight: 700 }}>KATEGORI</label>
             <select value={formObat.kategori} onChange={e => setFormObat({ ...formObat, kategori: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }}>
-              {['Demam', 'Antibiotik', 'Lambung', 'Herbal', 'Luka', 'Vitamin', 'Batuk', 'Lainnya'].map(k => <option key={k}>{k}</option>)}
+              {['Demam', 'Antibiotik', 'Lambung', 'Luka', 'Vitamin', 'Batuk', 'Radang', 'Lainnya'].map(k => <option key={k}>{k}</option>)}
             </select>
             <div style={{ display: 'flex', gap: 10 }}>
               <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>HARGA</label><input value={formObat.harga} onChange={e => setFormObat({ ...formObat, harga: e.target.value.replace(/[^0-9]/g, '') })} placeholder="5000" style={{ ...inp, margin: '6px 0 12px' }} /></div>
               <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>STOK</label><input value={formObat.stok} onChange={e => setFormObat({ ...formObat, stok: e.target.value.replace(/[^0-9]/g, '') })} placeholder="50" style={{ ...inp, margin: '6px 0 12px' }} /></div>
             </div>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label><input value={formObat.exp} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} placeholder="MM/YYYY, cth: 12/2027" style={{ ...inp, margin: '6px 0 16px' }} />
+            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label><input value={formObat.exp} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} placeholder="YYYY-MM-DD, cth: 2027" style={{ ...inp, margin: '6px 0 16px' }} />
             <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
             {editId && <button onClick={() => { setEditId(null); setFormObat({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' }); }} style={{ width: '100%', background: 'white', border: '1px solid #E2E8F0', padding: 12, borderRadius: 999, marginTop: 8, cursor: 'pointer' }}>Batal Edit</button>}
           </div>

@@ -34,7 +34,7 @@ export default function Login({ onKembali, onLoginSukses }) {
 
         {/* LOGO R - SAMA KAYAK NAVBAR KASIR */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 6 }}>
-          <div style={{ width: 44, height: 44, background: '#0D9488', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 26, fontWeight: 900, fontFamily: 'system-ui', boxShadow: '0 4px 12px rgba(13,148,136,0.3)', letterSpacing: '-1px' }}>
+          <div style={{ width: 44, height: 44, background: '#0D9488', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 26, fontWeight: 900, fontFamily: 'system-ui', boxShadow: '0 4px 12px rgba(13,148,136,0.3)', letterSpacing: '-1px' }}>
             R
           </div>
           <div style={{ textAlign: 'left', lineHeight: 1.1 }}>

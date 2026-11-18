@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 
 export default function SuhuHarian() {
@@ -28,7 +28,7 @@ export default function SuhuHarian() {
   const handleLoginSuhu = async (e) => {
     e.preventDefault();
     if (!loginForm.username || !loginForm.password) return alert('Isi username & password apotek dulu');
-    const emailPalsu = loginForm.username.toLowerCase().trim() + '@yakrija.com';
+    const emailPalsu = loginForm.username.toLowerCase().trim() + '@yakrija.id';
     const { data, error } = await supabase.auth.signInWithPassword({ email: emailPalsu, password: loginForm.password });
     if (error) return alert('Login gagal: Username / password salah');
     setUser(data.user);
