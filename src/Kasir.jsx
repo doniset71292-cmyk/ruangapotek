@@ -28,14 +28,14 @@ export default function Kasir() {
   const [formObat, setFormObat] = useState({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' });
   const [editId, setEditId] = useState(null);
 
-  // === BARU: PO / FAKTUR ===
+  // === PO / FAKTUR ===
   const [poList, setPoList] = useState(() => {
     const s = localStorage.getItem('ruangapotek_po');
     return s ? JSON.parse(s) : [];
   });
   const [poForm, setPoForm] = useState({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
 
-  // === BARU: LAPORAN SUHU ===
+  // === LAPORAN SUHU ===
   const logSuhu = JSON.parse(localStorage.getItem('log_suhu') || '[]');
   const [filterSuhu, setFilterSuhu] = useState('Semua');
 
@@ -94,7 +94,7 @@ export default function Kasir() {
     const poBaru = { ...poForm, tanggal: new Date().toLocaleDateString('id-ID'), total: totalPO, status: 'BELUM LUNAS', id: Date.now() };
     setPoList([poBaru, ...poList]);
 
-    // TAMBAH STOK KE OBATS YANG SAMA - INI KUNCINYA
+    // TAMBAH STOK KE OBAT YANG SAMA
     let obatsBaru = [...obats];
     poForm.items.forEach(it => {
       const idx = obatsBaru.findIndex(o => o.nama.toLowerCase() === it.nama.toLowerCase());
@@ -142,7 +142,7 @@ export default function Kasir() {
       <div style={{ width: 240, background: 'white', borderRight: '1px solid #E2E8F0', padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 36, height: 36, background: '#0D9488', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>➕</div>
+            <div style={{ width: 36, height: 36, background: 'white', borderRadius: 999, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#0D9488', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>R</div>
             <div style={{ lineHeight: 1 }}>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5 }}>Ruang</div>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5, color: '#0D9488' }}>Apotek</div>
