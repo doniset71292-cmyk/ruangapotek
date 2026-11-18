@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { supabase } from './supabase';
 
 const OBAT_AWAL = [
   { id: 1, nama: 'Paracetamol 500mg', kategori: 'Demam', harga: 5000, stok: 120, exp: '12/2027' },
@@ -10,10 +11,8 @@ const OBAT_AWAL = [
 export default function Kasir() {
   const [halaman, setHalaman] = useState('kasir');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [obats, setObats] = useState(() => {
-    const s = localStorage.getItem('ruangapotek_obats');
-    return s ? JSON.parse(s) : OBAT_AWAL;
-  });
+  const [obats, setObats] = useState([]);
+  const [loadingObat, setLoadingObat] = useState(true);
   const [transaksis, setTransaksis] = useState(() => {
     const s = localStorage.getItem('ruangapotek_transaksi');
     return s ? JSON.parse(s) : [];
@@ -24,22 +23,50 @@ export default function Kasir() {
   const [strukTerakhir, setStrukTerakhir] = useState(null);
   const [detailTransaksi, setDetailTransaksi] = useState(null);
 
-  // Form Tambah Obat
   const [formObat, setFormObat] = useState({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' });
   const [editId, setEditId] = useState(null);
 
-  // === PO / FAKTUR ===
   const [poList, setPoList] = useState(() => {
     const s = localStorage.getItem('ruangapotek_po');
     return s ? JSON.parse(s) : [];
   });
   const [poForm, setPoForm] = useState({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
 
-  // === LAPORAN SUHU ===
-  const logSuhu = JSON.parse(localStorage.getItem('log_suhu') || '[]');
+  // === LAPORAN SUHU DARI SUPABASE ===
+  const [logSuhu, setLogSuhu] = useState([]);
   const [filterSuhu, setFilterSuhu] = useState('Semua');
 
-  useEffect(() => { localStorage.setItem('ruangapotek_obats', JSON.stringify(obats)); }, [obats]);
+  // === LOAD OBAT DARI SUPABASE ===
+  const loadObats = async () => {
+    setLoadingObat(true);
+    const { data, error } = await supabase.from('obat').select('*').order('nama');
+    if (error) {
+      console.error(error);
+      setObats(OBAT_AWAL);
+    } else if (!data || data.length === 0) {
+      // Kalau masih kosong, seed obat awal sekali aja
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const toInsert = OBAT_AWAL.map(o => ({ nama: o.nama, kategori: o.kategori, harga: o.harga, stok: o.stok, expired: o.exp, apotek_id: user.id }));
+        await supabase.from('obat').insert(toInsert);
+        const { data: data2 } = await supabase.from('obat').select('*').order('nama');
+        setObats(data2 || []);
+      } else {
+        setObats(OBAT_AWAL);
+      }
+    } else {
+      // Map biar exp tetep jalan, karena di DB namanya expired
+      setObats(data.map(d => ({ ...d, exp: d.expired || d.exp || '12/2027' })));
+    }
+    setLoadingObat(false);
+  };
+
+  const loadSuhu = async () => {
+    const { data } = await supabase.from('log_suhu').select('*').order('created_at', { ascending: false });
+    if (data) setLogSuhu(data);
+  };
+
+  useEffect(() => { loadObats(); loadSuhu(); }, []);
   useEffect(() => { localStorage.setItem('ruangapotek_transaksi', JSON.stringify(transaksis)); }, [transaksis]);
   useEffect(() => { localStorage.setItem('ruangapotek_po', JSON.stringify(poList)); }, [poList]);
 
@@ -54,7 +81,7 @@ export default function Kasir() {
     else setCart([...cart, { ...obat, qty: 1 }]);
   };
 
-  const checkout = () => {
+  const checkout = async () => {
     if (!cart.length) return alert('Keranjang masih kosong!');
     if (!bayar || Number(bayar) < total) return alert(`Uang kurang! Total Rp ${total.toLocaleString('id-ID')}`);
     const trx = {
@@ -64,6 +91,13 @@ export default function Kasir() {
       items: cart,
       total, bayar: Number(bayar), kembalian,
     };
+    // Kurangi stok di Supabase
+    for (const c of cart) {
+      const obatBaru = obats.find(o => o.id === c.id);
+      if (obatBaru) {
+        await supabase.from('obat').update({ stok: obatBaru.stok - c.qty }).eq('id', c.id);
+      }
+    }
     setObats(obats.map(o => {
       const diCart = cart.find(c => c.id === o.id);
       return diCart ? { ...o, stok: o.stok - diCart.qty } : o;
@@ -73,44 +107,58 @@ export default function Kasir() {
     setCart([]); setBayar('');
   };
 
-  const simpanObatBaru = () => {
+  const simpanObatBaru = async () => {
     if (!formObat.nama || !formObat.harga || !formObat.stok) return alert('Isi Nama, Harga, Stok dulu!');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert('Harus login dulu!');
+    const payload = { nama: formObat.nama, kategori: formObat.kategori, harga: Number(formObat.harga), stok: Number(formObat.stok), expired: formObat.exp || '12/2027', apotek_id: user.id };
     if (editId) {
-      setObats(obats.map(o => o.id === editId ? { ...o, nama: formObat.nama, kategori: formObat.kategori, harga: Number(formObat.harga), stok: Number(formObat.stok), exp: formObat.exp || o.exp } : o));
+      const { error } = await supabase.from('obat').update(payload).eq('id', editId);
+      if (error) return alert(error.message);
       alert('Obat berhasil diupdate!');
     } else {
-      setObats([...obats, { id: Date.now(), nama: formObat.nama, kategori: formObat.kategori, harga: Number(formObat.harga), stok: Number(formObat.stok), exp: formObat.exp || '12/2027' }]);
+      const { error } = await supabase.from('obat').insert([payload]);
+      if (error) return alert(error.message);
       alert('Obat baru berhasil ditambah!');
     }
     setFormObat({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' });
     setEditId(null); setHalaman('stok');
+    loadObats();
   };
 
-  // === FUNGSI PO: SIMPAN FAKTUR + OTOMATIS TAMBAH STOK ===
-  const simpanPO = () => {
+  const hapusObat = async (obat) => {
+    if (!confirm(`Hapus ${obat.nama}?`)) return;
+    await supabase.from('obat').delete().eq('id', obat.id);
+    loadObats();
+  };
+
+  const simpanPO = async () => {
     if (!poForm.noFaktur) return alert('Isi No. Faktur dulu!');
     if (!poForm.items[0].nama) return alert('Isi minimal 1 obat!');
     const totalPO = poForm.items.reduce((s, it) => s + (Number(it.qty) * Number(it.hargaBeli || 0)), 0);
     const poBaru = { ...poForm, tanggal: new Date().toLocaleDateString('id-ID'), total: totalPO, status: 'BELUM LUNAS', id: Date.now() };
     setPoList([poBaru, ...poList]);
 
-    // TAMBAH STOK KE OBAT YANG SAMA
+    const { data: { user } } = await supabase.auth.getUser();
     let obatsBaru = [...obats];
-    poForm.items.forEach(it => {
+    for (const it of poForm.items) {
       const idx = obatsBaru.findIndex(o => o.nama.toLowerCase() === it.nama.toLowerCase());
+      const expBaru = it.exp ? it.exp.split('-').reverse().join('/').slice(3) : '12/2027';
       if (idx >= 0) {
-        obatsBaru[idx] = { ...obatsBaru[idx], stok: obatsBaru[idx].stok + Number(it.qty), exp: it.exp ? it.exp.split('-').reverse().join('/').slice(3) : obatsBaru[idx].exp };
+        const stokBaru = obatsBaru[idx].stok + Number(it.qty);
+        await supabase.from('obat').update({ stok: stokBaru, expired: expBaru }).eq('id', obatsBaru[idx].id);
+        obatsBaru[idx] = { ...obatsBaru[idx], stok: stokBaru, exp: expBaru };
       } else {
-        obatsBaru.push({ id: Date.now() + Math.random(), nama: it.nama, kategori: 'Lainnya', harga: Number(it.hargaBeli) * 1.5, stok: Number(it.qty), exp: it.exp ? it.exp.slice(5,7) + '/' + it.exp.slice(0,4) : '12/2027' });
+        const { data } = await supabase.from('obat').insert([{ nama: it.nama, kategori: 'Lainnya', harga: Number(it.hargaBeli) * 1.5, stok: Number(it.qty), expired: expBaru, apotek_id: user?.id }]).select().single();
+        if (data) obatsBaru.push({ ...data, exp: data.expired });
       }
-    });
+    }
     setObats(obatsBaru);
     alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis nambah, langsung bisa dijual di Kasir.`);
     setPoForm({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
     setHalaman('po');
   };
 
-  // Laporan
   const hariIni = new Date().toISOString().slice(0, 10);
   const trxHariIni = transaksis.filter(t => t.tanggalRaw === hariIni);
   const omsetHariIni = trxHariIni.reduce((a, t) => a + t.total, 0);
@@ -138,7 +186,6 @@ export default function Kasir() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F0F9F7', fontFamily: 'system-ui, sans-serif', color: '#1e293b' }}>
-      {/* SIDEBAR */}
       <div style={{ width: 240, background: 'white', borderRight: '1px solid #E2E8F0', padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -150,7 +197,7 @@ export default function Kasir() {
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ border: 'none', background: '#F1F5F9', borderRadius: 999, padding: '6px 10px', cursor: 'pointer' }}>✕</button>
         </div>
-        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • Offline • v2.0</p>
+        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • Supabase • v2.1</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {menu.map(m => (
             <button key={m.id} onClick={() => { setHalaman(m.id); setSidebarOpen(false); }} style={{ textAlign: 'left', padding: '12px', borderRadius: 12, border: 'none', background: halaman === m.id ? '#0D9488' : '#F8FAFC', color: halaman === m.id ? 'white' : '#1e293b', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -161,19 +208,17 @@ export default function Kasir() {
         </div>
         <div style={{ marginTop: 'auto', background: '#FFFBEB', borderRadius: 12, padding: 12 }}>
           <b style={{ fontSize: 12 }}>⚠️ Obat hampir expired</b>
-          <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => o.exp.includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
+          <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => (o.exp || '').includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
           {hutangPO.length > 0 && <p style={{ fontSize: 12, margin: '8px 0 0', color: '#92400E', fontWeight: 700 }}>💸 Hutang PO: Rp {totalHutang.toLocaleString('id-ID')} ({hutangPO.length} faktur)</p>}
         </div>
       </div>
 
-      {/* KONTEN */}
       <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
-          <span style={{ background: '#FFEDD5', color: '#9A3412', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Trial mode</span>
+          <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online - Supabase</span>
         </div>
 
-        {/* === HALAMAN KASIR (TETAP SAMA) === */}
         {halaman === 'kasir' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
             {hutangPO.length > 0 && (
@@ -184,7 +229,7 @@ export default function Kasir() {
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
               <h2 style={{ margin: '0 0 12px' }}>Kasir</h2>
               <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
-              <p style={{ fontSize: 12, color: '#64748B' }}>{obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang</p>
+              <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                 {obatTampil.map(o => (
                   <button key={o.id} onClick={() => tambahKeCart(o)} style={{ textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 14, padding: 12, cursor: 'pointer' }}>
@@ -228,7 +273,6 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === TAMBAH OBAT (TETAP SAMA) === */}
         {halaman === 'tambah' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
             <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
@@ -247,7 +291,6 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === KELOLA STOK (TETAP SAMA) === */}
         {halaman === 'stok' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 style={{ margin: 0 }}>📦 Kelola Stok Obat</h2><button onClick={() => setHalaman('tambah')} style={btnTeal}>+ Obat Baru</button></div>
@@ -258,21 +301,19 @@ export default function Kasir() {
                 <span style={{ fontWeight: 800, fontSize: 14, background: o.stok < 20 ? '#FEF3C7' : '#F0FDF4', padding: '6px 10px', borderRadius: 999 }}>Stok: {o.stok}</span>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => { setEditId(o.id); setFormObat({ nama: o.nama, kategori: o.kategori, harga: String(o.harga), stok: String(o.stok), exp: o.exp }); setHalaman('tambah'); }} style={{ background: '#EFF6FF', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>✏️ Edit</button>
-                  <button onClick={() => { if (confirm(`Hapus ${o.nama}?`)) setObats(obats.filter(x => x.id !== o.id)); }} style={{ background: '#FEF2F2', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>🗑️</button>
+                  <button onClick={() => hapusObat(o)} style={{ background: '#FEF2F2', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>🗑️</button>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* === BARU: PO / FAKTUR - NYAMBUNG KE STOK === */}
         {halaman === 'po' && (
           <div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <div style={{ background: 'white', borderRadius: 16, padding: 16, flex: 1, minWidth: 160 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Hutang (Belum Lunas)</div><b style={{ fontSize: 20, color: '#DC2626' }}>Rp {totalHutang.toLocaleString('id-ID')}</b></div>
               <div style={{ background: 'white', borderRadius: 16, padding: 16, flex: 1, minWidth: 160 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Faktur</div><b style={{ fontSize: 20 }}>{poList.length} Faktur</b></div>
             </div>
-
             <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
               <h2 style={{ marginTop: 0 }}>📦 Input Faktur Baru</h2>
               <label style={{ fontSize: 12, fontWeight: 700 }}>NO. FAKTUR (dari kertas PBF)</label>
@@ -289,7 +330,6 @@ export default function Kasir() {
                   <input type="date" value={poForm.jatuhTempo} onChange={e => setPoForm({ ...poForm, jatuhTempo: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }} />
                 </div>
               </div>
-
               <b style={{ fontSize: 13 }}>Daftar Obat di Faktur</b>
               {poForm.items.map((it, idx) => (
                 <div key={idx} style={{ background: '#F8FAFC', padding: 12, borderRadius: 12, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -308,7 +348,6 @@ export default function Kasir() {
                 <button onClick={simpanPO} style={btnTeal}>Simpan & Tambah Stok →</button>
               </div>
             </div>
-
             <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
               <b>📋 Daftar Faktur</b>
               {poList.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada faktur. Input faktur pertama di atas ya.</p> : poList.map(p => (
@@ -325,12 +364,11 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === LAPORAN SUHU - NYAMBUNG KE BARCODE === */}
         {halaman === 'suhu' && (
           <div>
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                <div><h2 style={{ margin: 0 }}>🌡️ Laporan Suhu Harian</h2><p style={{ margin: '4px 0 0', color: '#64748B', fontSize: 12 }}>Data dari scan barcode di ruangan • Untuk audit Dinas Kesehatan</p></div>
+                <div><h2 style={{ margin: 0 }}>🌡️ Laporan Suhu Harian</h2><p style={{ margin: '4px 0 0', color: '#64748B', fontSize: 12 }}>Data dari Supabase • Untuk audit Dinas Kesehatan</p></div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => window.open('/cetak-barcode-suhu', '_blank')} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>🖨️ Cetak Barcode</button>
                   <button onClick={() => {
@@ -364,7 +402,6 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === RIWAYAT === */}
         {halaman === 'riwayat' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
@@ -391,7 +428,6 @@ export default function Kasir() {
           </div>
         )}
 
-        {/* === LAPORAN HARIAN === */}
         {halaman === 'laporan' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -414,7 +450,7 @@ export default function Kasir() {
           </div>
         )}
 
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 20 }}>RuangApotek v2.0 • Data tersimpan di HP ini • Offline</p>
+        <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 20 }}>RuangApotek v2.1 • Data tersimpan di Supabase • Online</p>
       </div>
 
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 40 }}></div>}
