@@ -1,47 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from './supabase';
 
-const [nik, setNik] = useState('');
-const [namaPasien, setNamaPasien] = useState('');
-const [pasienLama, setPasienLama] = useState(null);
-
-// Pas ketik NIK, cek otomatis kalau pasien udah pernah datang
-const cariPasien = async (nikInput) => {
-  setNik(nikInput);
-  if (nikInput.length === 16) {
-    const { data } = await supabase.from('pasien').select('*').eq('nik', nikInput).single();
-    if (data) {
-      setNamaPasien(data.nama);
-      setPasienLama(data);
-      alert(`Pasien lama ketemu: ${data.nama} - Alergi: ${data.alergi || '-'}`);
-    } else {
-      setPasienLama(null);
-      setNamaPasien('');
-    }
-  }
-};
-// Simpan pasien dulu kalau ada NIK
-if (nik) {
-  await supabase.from('pasien').upsert({ nik, nama: namaPasien || 'Tanpa Nama', apotek_id: userId }, { onConflict: 'nik' });
-}
-
-// Pas insert transaksi, tambahin 2 ini:
-const { error } = await supabase.from('transaksi').insert({
-  // ... yang lama kamu biarin ...
-  pasien_nik: nik || null,
-  pasien_nama: namaPasien || null,
-});
-
-const simpanPasien = async () => {
-  if (nik.length !== 16) return alert('NIK harus 16 digit!');
-  if (!namaPasien) return alert('Isi nama pasien dulu');
-  const { error } = await supabase.from('pasien').upsert({
-    nik: nik,
-    nama: namaPasien,
-    apotek_id: userId, // id apotek kamu
-  }, { onConflict: 'nik' });
-  if (error) alert(error.message);
-};
 const OBAT_AWAL = [
   { id: 1, nama: 'Paracetamol 500mg', kategori: 'Demam', harga: 5000, stok: 120, exp: '12/2027' },
   { id: 2, nama: 'Amoxicillin 500mg', kategori: 'Antibiotik', harga: 15000, stok: 18, exp: '02/2027' },
@@ -314,26 +273,23 @@ export default function Kasir() {
           </div>
         )}
 
-       {/* INPUT PASIEN */}
-<div style={{ background: '#F0FDFA', border: '1px solid #CCFBF1', borderRadius: 12, padding: 12, marginBottom: 12 }}>
-  <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>👤 DATA PASIEN <span style={{ fontWeight: 400, color: '#64748B' }}>(Opsional, isi kalau pakai resep)</span></div>
-  <div style={{ display: 'flex', gap: 8 }}>
-    <input
-      placeholder="Ketik NIK 16 digit..."
-      value={nik}
-      onChange={e => cariPasien(e.target.value.replace(/\D/g, '').slice(0,16))}
-      style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #E2E8F0' }}
-    />
-    <input
-      placeholder="Nama Pasien"
-      value={namaPasien}
-      onChange={e => setNamaPasien(e.target.value)}
-      style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #E2E8F0' }}
-    />
-  </div>
-  {pasienLama && <div style={{ fontSize: 12, color: '#0D9488', marginTop: 6 }}>✅ Pasien lama: {pasienLama.nama} • Riwayat ada {pasienLama.alergi ? `Alergi: ${pasienLama.alergi}` : 'Tidak ada alergi'}</div>}
-  {nik.length === 16 && !pasienLama && <div style={{ fontSize: 12, color: '#F59E0B', marginTop: 6 }}>🆕 Pasien baru, akan disimpan otomatis pas bayar</div>}
-</div>
+        {halaman === 'tambah' && (
+          <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
+            <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
+            <label style={{ fontSize: 12, fontWeight: 700 }}>NAMA OBAT</label><input value={formObat.nama} onChange={e => setFormObat({ ...formObat, nama: e.target.value })} placeholder="Contoh: Paracetamol 500mg" style={{ ...inp, margin: '6px 0 12px' }} />
+            <label style={{ fontSize: 12, fontWeight: 700 }}>KATEGORI</label>
+            <select value={formObat.kategori} onChange={e => setFormObat({ ...formObat, kategori: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }}>
+              {['Demam', 'Antibiotik', 'Lambung', 'Luka', 'Vitamin', 'Batuk', 'Radang', 'Lainnya'].map(k => <option key={k}>{k}</option>)}
+            </select>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>HARGA</label><input value={formObat.harga} onChange={e => setFormObat({ ...formObat, harga: e.target.value.replace(/[^0-9]/g, '') })} placeholder="5000" style={{ ...inp, margin: '6px 0 12px' }} /></div>
+              <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>STOK</label><input value={formObat.stok} onChange={e => setFormObat({ ...formObat, stok: e.target.value.replace(/[^0-9]/g, '') })} placeholder="50" style={{ ...inp, margin: '6px 0 12px' }} /></div>
+            </div>
+            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label><input value={formObat.exp} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} placeholder="YYYY-MM-DD, contoh: 2027-12-01" style={{ ...inp, margin: '6px 0 16px' }} />
+            <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
+            {editId && <button onClick={() => { setEditId(null); setFormObat({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' }); }} style={{ width: '100%', background: 'white', border: '1px solid #E2E8F0', padding: 12, borderRadius: 999, marginTop: 8, cursor: 'pointer' }}>Batal Edit</button>}
+          </div>
+        )}
 
         {halaman === 'stok' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
