@@ -46,7 +46,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 4000);
+    }, 2000);
     return () => clearInterval(timer);
   }, [isPaused]);
 
@@ -140,7 +140,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
         <h2 style={{textAlign: 'center', fontSize: 24, fontWeight: 800}}>Fitur Utama</h2>
         <div style={{...s.fiturGrid, gridTemplateColumns: window.innerWidth > 800 ? '1fr 1fr 1fr' : '1fr'}}>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>🛒</div><h3>Transaksi Kasir</h3><p style={s.p}>Tinggal klik nama obat otomatis masuk keranjang, cepat dan mudah.</p></div>
-          <div style={s.fiturCard}><div style={{fontSize: 32}}>➕</div><h3>Input Obat</h3><p style={s.p}>Input data obat manual, lengkap dan mudah.</p></div>
+          <div style={s.fiturCard}><div style={{fontSize: 32}}>👤</div><h3>Input Pasien</h3><p style={s.p}>Input data pasien dengan mudah dan lengkap.</p></div>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>⏰</div><h3>Alert Expired</h3><p style={s.p}>Obat &lt; 90 hari expired langsung merah. Cegah rugi puluhan ribu per strip.</p></div>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>📊</div><h3>Laporan Harian</h3><p style={s.p}>Omset hari ini, obat paling laku, stok menipis — semua dalam 1 layar.</p></div>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>📦</div><h3>Purchase Order</h3><p style={s.p}>Input Faktur obat jadi lebih mudah — stok obat bertambah otomatis.</p></div>
