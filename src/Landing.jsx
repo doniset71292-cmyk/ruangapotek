@@ -51,7 +51,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
   }, [isPaused]);
 
   const keWA = () => {
-    const pesan = `Halo RuangApotek, saya ${username || 'dari Apotek'} mau daftar paket Rp 699rb/tahun. Boleh demo 5 menit?`;
+    const pesan = `Halo RuangApotek, saya ${username || 'dari Apotek'} mau daftar paket Rp 999rb/tahun. Boleh demo 5 menit?`;
     window.open(`https://wa.me/628818352063?text=${encodeURIComponent(pesan)}`, '_blank');
   };
 
