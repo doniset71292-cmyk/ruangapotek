@@ -154,7 +154,7 @@ export default function Kasir() {
       }
     }
     setObats(obatsBaru);
-    alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis bertambah, langsung bisa dijual di Kasir.`);
+    alert(`PO ${poForm.noFaktur} tersimpan! Stok otomatis bertambah, langsung bisa transaksi di Kasir.`);
     setPoForm({ noFaktur: '', supplier: 'PT. Kimia Farma Trading', jatuhTempo: '', items: [{ nama: '', qty: 1, hargaBeli: '', exp: '' }] });
     setHalaman('po');
   };
@@ -172,7 +172,7 @@ export default function Kasir() {
   const totalHutang = hutangPO.reduce((s, p) => s + p.total, 0);
 
   const menu = [
-    { id: 'kasir', label: '🛒 Kasir', desc: 'Penualan' },
+    { id: 'kasir', label: '🛒 Kasir', desc: 'Penjualan' },
     { id: 'tambah', label: '➕ Tambah Obat', desc: 'Obat baru' },
     { id: 'stok', label: '📦 Kelola Stok', desc: `${obats.length} obat` },
     { id: 'po', label: '📦 PO / Faktur', desc: hutangPO.length ? `${hutangPO.length} belum lunas` : 'Input faktur' },
@@ -216,7 +216,7 @@ export default function Kasir() {
       <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
-          <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online - Supabase</span>
+          <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
         </div>
 
         {halaman === 'kasir' && (
@@ -266,7 +266,7 @@ export default function Kasir() {
                     }} style={{ flex: 1, background: '#25D366', color: 'white', border: 'none', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>💬 Kirim Struk WA</button>
                     <button onClick={() => window.print()} style={{ flex: 1, background: 'white', border: '1px solid #E2E8F0', padding: 10, borderRadius: 999, fontWeight: 700, cursor: 'pointer' }}>🖨️ Simpan PDF</button>
                   </div>
-                  <p style={{ fontSize: 11, color: '#64748B', margin: '8px 0 0', textAlign: 'center' }}>Bukti bayar QRIS sudah di-print via EDC. Ini untuk rincian obat.</p>
+                  <p style={{ fontSize: 11, color: '#64748B', margin: '8px 0 0', textAlign: 'center' }}>Bukti bayar QRIS sudah di-print via EDC.</p>
                 </div>
               )}
             </div>
@@ -350,7 +350,7 @@ export default function Kasir() {
             </div>
             <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
               <b>📋 Daftar Faktur</b>
-              {poList.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada faktur. Input faktur pertama di atas ya.</p> : poList.map(p => (
+              {poList.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada faktur. Input faktur pertama di atas.</p> : poList.map(p => (
                 <div key={p.id} style={{ border: '1px solid #F1F5F9', borderRadius: 12, padding: 12, marginTop: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                     <div><b>{p.noFaktur}</b> • {p.supplier}<div style={{ fontSize: 12, color: '#64748B' }}>Tgl: {p.tanggal} • Jatuh Tempo: {p.jatuhTempo || '-'} • {p.items.length} obat</div></div>
@@ -405,7 +405,7 @@ export default function Kasir() {
         {halaman === 'riwayat' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
             <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
-            {transaksis.length === 0 ? <p style={{ color: '#94A3B8' }}>Belum ada transaksi. Coba dulu di Kasir.</p> : transaksis.map(t => (
+            {transaksis.length === 0 ? <p style={{ color: '#94A3B8' }}>Belum ada transaksi. Mulai transaksi di Kasir.</p> : transaksis.map(t => (
               <button key={t.id} onClick={() => setDetailTransaksi(t)} style={{ width: '100%', textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
                 <span><b>{t.id}</b><div style={{ fontSize: 12, color: '#64748B' }}>{t.tanggal} • {t.items.reduce((a, i) => a + i.qty, 0)} item</div></span>
                 <b>Rp {t.total.toLocaleString('id-ID')} →</b>

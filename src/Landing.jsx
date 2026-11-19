@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const s = {
   page: { minHeight: '100vh', background: '#F0F9F7', fontFamily: 'system-ui, sans-serif', color: '#1e293b', boxSizing: 'border-box' },
@@ -16,11 +16,9 @@ const s = {
   stat: { padding: 12, borderRadius: 12, fontSize: 12 },
   fiturGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 16 },
   fiturCard: { background: 'white', borderRadius: 18, padding: 18, textAlign: 'center', boxShadow: '0 1px 5px rgba(0,0,0,0.05)' },
-  hargaBox: { background: '#0F766E', color: 'white', borderRadius: 24, padding: 24, textAlign: 'center', marginTop: 20 },
+  hargaBox: { background: '#0F766E', color: 'white', borderRadius: 24, padding: 24, textAlign: 'center', Items: 'center', marginTop: 20, maxWidth: 1100},
   // Style baru buat slider
   sliderWrap: { display: 'flex', transition: 'transform 0.7s ease-in-out' },
-  dot: { width: 10, height: 10, borderRadius: 999, border: 'none', cursor: 'pointer' },
-  arrowBtn: { width: 36, height: 36, borderRadius: 999, border: 'none', background: 'white', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', cursor: 'pointer', fontSize: 16, fontWeight: 800, color: '#0F766E' },
 };
 
 const slides = [
@@ -39,7 +37,7 @@ const slides = [
 ];
 
 export default function LandingRuangApotek({ onCobaKasir }) {
-  const [namaApotek, setNamaApotek] = useState("");
+  const [username] = useState('')
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -53,7 +51,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
   }, [isPaused]);
 
   const keWA = () => {
-    const pesan = `Halo RuangApotek, saya ${namaApotek || 'dari Apotek'} mau daftar paket Rp 699rb/tahun. Boleh demo 5 menit?`;
+    const pesan = `Halo RuangApotek, saya ${username || 'dari Apotek'} mau daftar paket Rp 699rb/tahun. Boleh demo 5 menit?`;
     window.open(`https://wa.me/628818352063?text=${encodeURIComponent(pesan)}`, '_blank');
   };
 
@@ -76,7 +74,7 @@ export default function LandingRuangApotek({ onCobaKasir }) {
         <div>
           <span style={s.badge}>⚡ Hemat 75% untuk Apotek Indonesia</span>
           <h1 style={s.h1}>Jadikan Apotekmu Online,<br/>Kelola Apotek secara Digital</h1>
-          <p style={s.p}>Aplikasi kasir & stok untuk Apotek. Cegah kerugian obat kedaluwarsa, pantau laporan harian, kelola penjualan — <b>bisa berjalan mode offline.</b></p>
+          <p style={s.p}>Aplikasi kasir & stok untuk Apotek. Cegah kerugian obat kedaluwarsa, pantau laporan harian, kelola penjualan — <b>input suhu ruangan via barcode.</b></p>
 
           <div style={{display: 'flex', flexDirection: window.innerWidth > 600 ? 'row' : 'column', gap: 10, marginTop: 20}}>
             <button onClick={onCobaKasir} style={s.btnPrimary}>Coba Demo Kasir Gratis →</button>
@@ -140,11 +138,14 @@ export default function LandingRuangApotek({ onCobaKasir }) {
       {/* FITUR */}
       <div style={{maxWidth: 1100, margin: '0 auto', padding: '0 14px'}}>
         <h2 style={{textAlign: 'center', fontSize: 24, fontWeight: 800}}>Fitur Utama</h2>
-        <div style={{...s.fiturGrid, gridTemplateColumns: window.innerWidth > 700 ? '1fr 1fr 1fr' : '1fr'}}>
-          <div style={s.fiturCard}><div style={{fontSize: 32}}>🛒</div><h3>Kasir Offline</h3><p style={s.p}>Internet mati? Kasir tetap jalan. Data tersimpan otomatis di PC/HP.</p></div>
+        <div style={{...s.fiturGrid, gridTemplateColumns: window.innerWidth > 800 ? '1fr 1fr 1fr' : '1fr'}}>
+          <div style={s.fiturCard}><div style={{fontSize: 32}}>🛒</div><h3>Transaksi Kasir</h3><p style={s.p}>Tinggal klik nama obat otomatis masuk keranjang, cepat dan mudah.</p></div>
+          <div style={s.fiturCard}><div style={{fontSize: 32}}>➕</div><h3>Input Obat</h3><p style={s.p}>Input data obat manual, lengkap dan mudah.</p></div>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>⏰</div><h3>Alert Expired</h3><p style={s.p}>Obat &lt; 90 hari expired langsung merah. Cegah rugi puluhan ribu per strip.</p></div>
           <div style={s.fiturCard}><div style={{fontSize: 32}}>📊</div><h3>Laporan Harian</h3><p style={s.p}>Omset hari ini, obat paling laku, stok menipis — semua dalam 1 layar.</p></div>
-        </div>
+          <div style={s.fiturCard}><div style={{fontSize: 32}}>📦</div><h3>Purchase Order</h3><p style={s.p}>Input Faktur obat jadi lebih mudah — stok obat bertambah otomatis.</p></div>
+          <div style={s.fiturCard}><div style={{fontSize: 32}}>🌡️</div><h3>Input Suhu Ruangan</h3><p style={s.p}>Pantau laporan suhu harian, input data suhu ruangan — tinggal scan barcode.</p></div>
+          </div>
 
         {/* HARGA */}
         <div id="harga" style={s.hargaBox}>
@@ -155,14 +156,15 @@ export default function LandingRuangApotek({ onCobaKasir }) {
           <div style={{textAlign: 'left', maxWidth: 380, margin: '18px auto', fontSize: 14, lineHeight: 1.8}}>
             ✓ Semua fitur: Kasir, Stok, Expired, Laporan<br/>
             ✓ Bisa dipakai di HP + PC (1 apotek)<br/>
-            ✓ Tetap jalan walau tanpa internet<br/>
+            ✓ Pantau transaksi dimana saja<br/>
             ✓ Bantuan setup via WA sampai bisa
           </div>
           <button onClick={keWA} style={{width: '100%', maxWidth: 380, background: 'white', color: '#0F766E', border: 'none', padding: '14px', borderRadius: 999, fontWeight: 800, marginTop: 10, cursor: 'pointer'}}>Daftar Sekarang via WA →</button>
-          <p style={{fontSize: 11, color: '#99F6E4', marginTop: 10}}>1 obat expired yang terselamatkan = aplikasi sudah gratis.</p>
+          <p style={{fontSize: 11, color: '#99F6E4', marginTop: 10}}>1 obat expired terselamatkan sehari = aplikasi sudah gratis.</p>
         </div>
-        <p style={{textAlign: 'center', fontSize: 11, color: '#94A3B8', padding: '20px 0'}}>© 2026 RuangApotek • untuk Apotek di seluruh Indonesia</p>
+        </div>
+        <p style={{textAlign: 'center', fontSize: 11, color: '#94A3B8', padding: '20px 0'}}>© 2026 ruangapotek.com • untuk Apotek di seluruh Indonesia</p>
       </div>
-    </div>
+    
   );
 }

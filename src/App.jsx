@@ -38,7 +38,7 @@ export default function App() {
         <button onClick={async () => { 
           await supabase.auth.signOut();
           localStorage.removeItem('ruangapotek_login'); 
-          setHalaman('landing'); 
+          setHalaman('login'); 
         }} style={{ background: '#FEF2F2', color: '#DC2626', border: 'none', padding: '8px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Logout</button>
       </div>
       <Kasir />
