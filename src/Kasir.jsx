@@ -285,7 +285,7 @@ export default function Kasir() {
               <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>HARGA</label><input value={formObat.harga} onChange={e => setFormObat({ ...formObat, harga: e.target.value.replace(/[^0-9]/g, '') })} placeholder="5000" style={{ ...inp, margin: '6px 0 12px' }} /></div>
               <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>STOK</label><input value={formObat.stok} onChange={e => setFormObat({ ...formObat, stok: e.target.value.replace(/[^0-9]/g, '') })} placeholder="50" style={{ ...inp, margin: '6px 0 12px' }} /></div>
             </div>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label><input value={formObat.exp} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} placeholder="YYYY-MM-DD, cth: 2027" style={{ ...inp, margin: '6px 0 16px' }} />
+            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label><input value={formObat.exp} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} placeholder="YYYY-MM-DD, contoh: 2027-12-01" style={{ ...inp, margin: '6px 0 16px' }} />
             <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
             {editId && <button onClick={() => { setEditId(null); setFormObat({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' }); }} style={{ width: '100%', background: 'white', border: '1px solid #E2E8F0', padding: 12, borderRadius: 999, marginTop: 8, cursor: 'pointer' }}>Batal Edit</button>}
           </div>
