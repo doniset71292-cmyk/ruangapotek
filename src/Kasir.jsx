@@ -97,17 +97,17 @@ export default function Kasir() {
     if (!user) return;
     const { data, error } = await supabase.from('transaksi').select('*').eq('apotek_id', user.id).order('created_at', { ascending: false }).limit(200);
     if (error) { console.log('Gagal load transaksi:', error.message); return; }
-    const hasil = (data || []).map((t) => ({
-      id: 'TRX-' + String(t.id).padStart(6, '0'),
-      tanggal: new Date(t.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
-      tanggalRaw: new Date(t.created_at).toISOString().slice(0, 10),
-      items: t.items || [],
-      total: Number(t.total_harga) || 0,
-      bayar: Number(t.total_harga) || 0,
-      kembalian: 0,
-      pasien_nik: t.pasien_nik,
-      pasien_nama: t.pasien_nama,
-    }));
+   const hasil = (data || []).map((t) => ({
+    id: 'TRX-' + String(t.id).padStart(6, '0'),
+    tanggal: new Date(t.created_at).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+    tanggalRaw: new Date(t.created_at).toISOString().slice(0, 10),
+    items: t.items || [],
+    total: Number(t.total_harga) || 0,
+    bayar: Number(t.bayar) || Number(t.total_harga) || 0, // <-- kalau transaksi lama bayar-nya 0, pakai total aja biar gak kosong
+    kembalian: Number(t.kembalian) || 0, // <-- BARU
+    pasien_nik: t.pasien_nik,
+    pasien_nama: t.pasien_nama,
+  }));
     setTransaksis(hasil);
   };
 
@@ -167,7 +167,8 @@ export default function Kasir() {
 
     // CUMA 1x INSERT, dengan apotek_id
     const { error: errTrx } = await supabase.from('transaksi').insert([{
-      pasien_nik: nik || null, pasien_nama: namaPasien || null, total_harga: total,
+      pasien_nik: nik || null, pasien_nama: namaPasien || null, total_harga: total, bayar: Number(bayar), // <-- BARU
+      kembalian: kembalian, // <-- BARU
       items: cart.map(c => ({ id: c.id, nama: c.nama, harga: c.harga, qty: c.qty })),
       metode_bayar: 'tunai', apotek_id: user.id,
     }]);
@@ -458,25 +459,53 @@ export default function Kasir() {
         )}
 
         {halaman === 'riwayat' && (
-          <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-            <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
-            {transaksis.length === 0 ? <p style={{ color: '#94A3B8' }}>Belum ada transaksi.</p> : transaksis.map(t => (
-              <button key={t.id} onClick={() => setDetailTransaksi(t)} style={{ width: '100%', textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
-                <span><b>{t.id}</b><div style={{ fontSize: 12, color: '#64748B' }}>{t.tanggal} • {t.items.reduce((a, i) => a + i.qty, 0)} item {t.pasien_nama ? `• ${t.pasien_nama}` : ''}</div></span>
-                <b>Rp {t.total.toLocaleString('id-ID')} →</b>
-              </button>
-            ))}
-            {detailTransaksi && (
-              <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginTop: 12 }}>
-                <b>Struk {detailTransaksi.id}</b>
-                <p style={{ fontSize: 12, color: '#64748B' }}>{detailTransaksi.tanggal}{detailTransaksi.pasien_nama ? ` • ${detailTransaksi.pasien_nama}` : ''}</p>
-                {detailTransaksi.items.map((i, idx) => <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '6px 0' }}><span>{i.nama} x{i.qty}</span><span>Rp {(i.harga * i.qty).toLocaleString('id-ID')}</span></div>)}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}><span>Total</span><b>Rp {detailTransaksi.total.toLocaleString('id-ID')}</b></div>
-                <button onClick={() => setDetailTransaksi(null)} style={{ marginTop: 10 }}>✕ Tutup</button>
-              </div>
-            )}
-          </div>
-        )}
+  <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+    <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
+
+    {/* ===== BALANCE UANG - BARU ===== */}
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
+      <div style={{ background: '#F0FDF4', padding: 14, borderRadius: 12 }}>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Uang Masuk (Total Bayar)</div>
+        <b style={{ fontSize: 18, color: '#059669' }}>Rp {transaksis.reduce((a, t) => a + (t.bayar || 0), 0).toLocaleString('id-ID')}</b>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Dari pelanggan</div>
+      </div>
+      <div style={{ background: '#FEF2F2', padding: 14, borderRadius: 12 }}>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Uang Keluar (Kembalian)</div>
+        <b style={{ fontSize: 18, color: '#DC2626' }}>Rp {transaksis.reduce((a, t) => a + (t.kembalian || 0), 0).toLocaleString('id-ID')}</b>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Dikasih ke pelanggan</div>
+      </div>
+      <div style={{ background: '#EFF6FF', padding: 14, borderRadius: 12 }}>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Bersih di Laci (Omset)</div>
+        <b style={{ fontSize: 18, color: '#1D4ED8' }}>Rp {transaksis.reduce((a, t) => a + (t.total || 0), 0).toLocaleString('id-ID')}</b>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Masuk - Kembalian = Harus sama</div>
+      </div>
+    </div>
+    <p style={{ fontSize: 11, color: '#64748B', marginTop: -8, marginBottom: 12 }}>
+      Cek balance: Uang Masuk - Kembalian harus = Omset. Kalau beda, ada selisih di laci.
+    </p>
+
+    {transaksis.length === 0 ? <p style={{ color: '#94A3B8' }}>Belum ada transaksi.</p> : transaksis.map(t => (
+      <button key={t.id} onClick={() => setDetailTransaksi(t)} style={{ width: '100%', textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+        <span><b>{t.id}</b><div style={{ fontSize: 12, color: '#64748B' }}>{t.tanggal} • {t.items.reduce((a, i) => a + i.qty, 0)} item {t.pasien_nama ? `• ${t.pasien_nama}` : ''}</div>
+        <div style={{ fontSize: 11, color: '#64748B' }}>Bayar Rp {(t.bayar || 0).toLocaleString('id-ID')} • Kembali Rp {(t.kembalian || 0).toLocaleString('id-ID')}</div>
+        </span>
+        <b>Rp {t.total.toLocaleString('id-ID')} →</b>
+      </button>
+    ))}
+
+      {detailTransaksi && (
+        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><b>Struk {detailTransaksi.id}</b><button onClick={() => setDetailTransaksi(null)} style={{ border: 'none', background: 'white', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>✕ Tutup</button></div>
+          <p style={{ fontSize: 12, color: '#64748B' }}>{detailTransaksi.tanggal}{detailTransaksi.pasien_nama ? ` • ${detailTransaksi.pasien_nama}` : ''}</p>
+          {detailTransaksi.items.map((i, idx) => <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '6px 0', borderBottom: '1px solid #E2E8F0' }}><span>{i.nama} x{i.qty}</span><span>Rp {(i.harga * i.qty).toLocaleString('id-ID')}</span></div>)}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}><span>Total Belanja</span><b>Rp {detailTransaksi.total.toLocaleString('id-ID')}</b></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}><span>Uang Diterima (Bayar)</span><span>Rp {(detailTransaksi.bayar || 0).toLocaleString('id-ID')}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#DC2626' }}><span>Uang Keluar (Kembalian)</span><span>- Rp {(detailTransaksi.kembalian || 0).toLocaleString('id-ID')}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 800, borderTop: '1px solid #E2E8F0', paddingTop: 8, marginTop: 8 }}><span>Bersih Masuk Laci</span><span>Rp {detailTransaksi.total.toLocaleString('id-ID')}</span></div>
+        </div>
+      )}
+    </div>
+  )}
 
         {halaman === 'laporan' && (
           <div>
