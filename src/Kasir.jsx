@@ -63,27 +63,39 @@ export default function Kasir() {
   const [filterSuhu, setFilterSuhu] = useState('Semua');
 
   // ===== LOAD OBAT DARI SUPABASE =====
-  const loadObats = async () => {
-    setLoadingObat(true);
-    const { data, error } = await supabase.from('obat').select('*').order('nama');
-    if (error) {
-      console.error(error);
-      setObats(OBAT_AWAL);
-    } else if (!data || data.length === 0) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const toInsert = OBAT_AWAL.map(o => ({ nama: o.nama, kategori: o.kategori, harga: o.harga, stok: o.stok, expired: konversiExpired(o.exp), apotek_id: user.id }));
-        await supabase.from('obat').insert(toInsert);
-        const { data: data2 } = await supabase.from('obat').select('*').order('nama');
-        setObats((data2 || []).map(d => ({ ...d, exp: tampilExpired(d.expired) })));
-      } else {
-        setObats(OBAT_AWAL);
-      }
-    } else {
-      setObats(data.map(d => ({ ...d, exp: tampilExpired(d.expired) })));
-    }
+const loadObats = async () => {
+  setLoadingObat(true);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    setObats(OBAT_AWAL);
     setLoadingObat(false);
-  };
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('obat')
+    .select('*')
+    .eq('apotek_id', user.id) // <-- INI YANG BIKIN KEPISAH
+    .order('nama');
+
+  if (error) {
+    console.error(error);
+    setObats([]);
+  } else if (!data || data.length === 0) {
+    // Kalau apotek ini belum punya obat sama sekali, seed obat awal KHUSUS buat dia aja
+    const toInsert = OBAT_AWAL.map(o => ({ 
+      nama: o.nama, kategori: o.kategori, harga: o.harga, stok: o.stok, 
+      expired: konversiExpired(o.exp), 
+      apotek_id: user.id 
+    }));
+    await supabase.from('obat').insert(toInsert);
+    const { data: data2 } = await supabase.from('obat').select('*').eq('apotek_id', user.id).order('nama');
+    setObats((data2 || []).map(d => ({ ...d, exp: tampilExpired(d.expired) })));
+  } else {
+    setObats(data.map(d => ({ ...d, exp: tampilExpired(d.expired) })));
+  }
+  setLoadingObat(false);
+};
 
   const loadSuhu = async () => {
     const { data } = await supabase.from('log_suhu').select('*').order('created_at', { ascending: false });
@@ -136,6 +148,8 @@ export default function Kasir() {
   const checkout = async () => {
     if (!cart.length) return alert('Keranjang masih kosong!');
     if (!bayar || Number(bayar) < total) return alert(`Uang kurang! Total Rp ${total.toLocaleString('id-ID')}`);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert('Harus login dulu!');
 
     // Kalau ada NIK, wajib 16 digit + nama, simpan pasien dulu
     if (nik) {
@@ -146,20 +160,30 @@ export default function Kasir() {
         nama: namaPasien,
         no_hp: noHp || null,
         alergi: alergi || null,
+        apotek_id: user.id, // <-- WAJIB ADA, kalau gak ada ditolak RLS
       }, { onConflict: 'nik' });
       if (errPasien) return alert('Gagal simpan pasien: ' + errPasien.message);
       loadPasien();
     }
 
-    const trx = {
-      id: 'TRX-' + Date.now().toString().slice(-6),
-      tanggal: new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
-      tanggalRaw: new Date().toISOString().slice(0, 10),
-      items: cart,
-      total, bayar: Number(bayar), kembalian,
-      pasien_nik: nik || null,
-      pasien_nama: namaPasien || null,
-    };
+    const { error: errTrx } = await supabase.from('transaksi').insert([{
+    pasien_nik: nik || null,
+    pasien_nama: namaPasien || null,
+    total_harga: total,
+    items: cart.map(c => ({ id: c.id, nama: c.nama, harga: c.harga, qty: c.qty })),
+    metode_bayar: 'tunai',
+    apotek_id: user.id, // <-- WAJIB ADA, ini yang bikin kemarin gagal save
+  }]);
+  if (errTrx) return alert('Gagal simpan transaksi: ' + errTrx.message);
+
+  // 3. Kurangi stok (ini udah bener, karena udah filter id + apotek_id otomatis ke-filter RLS)
+  for (const c of cart) {
+    const obatBaru = obats.find(o => o.id === c.id);
+    if (obatBaru) {
+      await supabase.from('obat').update({ stok: obatBaru.stok - c.qty }).eq('id', c.id);
+    }
+  }
+
 
     // Simpan ke Supabase tabel transaksi (kalau tabelnya ada, kalau belum ada di-ignore biar gak error)
     try {
@@ -172,23 +196,7 @@ export default function Kasir() {
       }]);
     } catch (e) { console.log('Transaksi supabase skip:', e); }
 
-    // Kurangi stok di Supabase
-    for (const c of cart) {
-      const obatBaru = obats.find(o => o.id === c.id);
-      if (obatBaru) {
-        await supabase.from('obat').update({ stok: obatBaru.stok - c.qty }).eq('id', c.id);
-      }
-    }
-    setObats(obats.map(o => {
-      const diCart = cart.find(c => c.id === o.id);
-      return diCart ? { ...o, stok: o.stok - diCart.qty } : o;
-    }));
-    setTransaksis([trx, ...transaksis]);
-    setStrukTerakhir(trx);
-    setCart([]); setBayar('');
-    setNik(''); setNamaPasien(''); setNoHp(''); setAlergi(''); setPasienLama(null);
-  };
-
+  }
   const simpanObatBaru = async () => {
     if (!formObat.nama || !formObat.harga || !formObat.stok) return alert('Isi Nama, Harga, Stok dulu!');
     const { data: { user } } = await supabase.auth.getUser();
@@ -390,7 +398,7 @@ export default function Kasir() {
             </div>
             <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label>
             <input type="month" value={formObat.exp ? (formObat.exp.includes('/') ? (() => { const [b, t] = formObat.exp.split('/'); return `${t}-${b}`; })() : formObat.exp.slice(0, 7)) : ''} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} style={{ ...inp, margin: '6px 0 16px' }} />
-            <p style={{ fontSize: 11, color: '#64748B', marginTop: -10 }}>Pilih bulan + tahun, otomatis disimpan jadi 2027-12-01 di Supabase</p>
+            <p style={{ fontSize: 11, color: '#64748B', marginTop: -10 }}>Pilih bulan + tahun</p>
             <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
             {editId && <button onClick={() => { setEditId(null); setFormObat({ nama: '', kategori: 'Demam', harga: '', stok: '', exp: '' }); }} style={{ width: '100%', background: 'white', border: '1px solid #E2E8F0', padding: 12, borderRadius: 999, marginTop: 8, cursor: 'pointer' }}>Batal Edit</button>}
           </div>
