@@ -154,7 +154,7 @@ export default function Kasir() {
 // Cek dulu, pasien ini udah ada di APOTEK INI apa belum?
 const { data: pasienAda } = await supabase
   .from('pasien')
-  .select('id')
+  .select('nik')
   .eq('nik', nik)
   .eq('apotek_id', user.id)
   .maybeSingle();
