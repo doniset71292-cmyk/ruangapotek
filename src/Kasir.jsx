@@ -29,7 +29,6 @@ export default function Kasir() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [obats, setObats] = useState([]);
   const [loadingObat, setLoadingObat] = useState(true);
-  // FIX 2: Jangan pakai localStorage lagi untuk transaksi
   const [transaksis, setTransaksis] = useState([]);
   const [cart, setCart] = useState([]);
   const [cari, setCari] = useState('');
@@ -206,7 +205,7 @@ if (errPasien) return alert('Gagal simpan pasien: ' + errPasien.message);
       return diCart ? { ...o, stok: o.stok - diCart.qty } : o;
     }));
 
-    // INI YANG KEMARIN HILANG:
+    // INI YANG HILANG:
     setTransaksis([trx, ...transaksis]);
     setStrukTerakhir(trx);
     setCart([]); setBayar('');
@@ -277,7 +276,7 @@ if (errPasien) return alert('Gagal simpan pasien: ' + errPasien.message);
   }, [transaksis]);
 
   const hutangPO = poList.filter(p => p.status === 'BELUM LUNAS');
-  // ===== GRAFIK PENJUALAN PER HARI - BARU =====
+  // ===== GRAFIK PENJUALAN PER HARI =====
 const grafikHarian = useMemo(() => {
   const map = {};
   transaksis.forEach(t => {
@@ -298,6 +297,7 @@ const formatTglGrafik = (iso) => {
   const totalHutang = hutangPO.reduce((s, p) => s + p.total, 0);
 
   const menu = [
+    { id: 'laporan', label: '📊 Laporan', desc: 'Omset hari ini' },
     { id: 'kasir', label: '🛒 Kasir', desc: 'Penjualan' },
     { id: 'tambah', label: '➕ Tambah Obat', desc: 'Obat baru' },
     { id: 'stok', label: '📦 Kelola Stok', desc: `${obats.length} obat` },
@@ -305,7 +305,6 @@ const formatTglGrafik = (iso) => {
     { id: 'po', label: '📦 PO / Faktur', desc: hutangPO.length ? `${hutangPO.length} belum lunas` : 'Input faktur' },
     { id: 'suhu', label: '🌡️ Laporan Suhu', desc: `${logSuhu.length} catatan` },
     { id: 'riwayat', label: '🧾 Riwayat', desc: `${transaksis.length} transaksi` },
-    { id: 'laporan', label: '📊 Laporan', desc: 'Omset hari ini' },
   ];
 
   const inp = { width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: 14 };
@@ -324,7 +323,7 @@ const formatTglGrafik = (iso) => {
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ border: 'none', background: '#F1F5F9', borderRadius: 999, padding: '6px 10px', cursor: 'pointer' }}>✕</button>
         </div>
-        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • Supabase • v2.1</p>
+        <p style={{ fontSize: 11, color: '#94A3B8', margin: '6px 0 16px' }}>Kasir • v2.1</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {menu.map(m => (
             <button key={m.id} onClick={() => { setHalaman(m.id); setSidebarOpen(false); }} style={{ textAlign: 'left', padding: '12px', borderRadius: 12, border: 'none', background: halaman === m.id ? '#0D9488' : '#F8FAFC', color: halaman === m.id ? 'white' : '#1e293b', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -346,6 +345,77 @@ const formatTglGrafik = (iso) => {
           <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
         </div>
 
+         {halaman === 'laporan' && (
+  <div>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Omset Hari Ini</div><b style={{ fontSize: 22 }}>Rp {omsetHariIni.toLocaleString('id-ID')}</b></div>
+      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Transaksi Hari Ini</div><b style={{ fontSize: 22 }}>{trxHariIni.length}x</b></div>
+      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Semua Transaksi</div><b style={{ fontSize: 22 }}>{transaksis.length}x</b></div>
+    </div>
+
+    {/* ===== GRAFIK PENJUALAN PER HARI - ===== */}
+    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <b>📊 Grafik Penjualan Per Hari</b>
+        <span style={{ fontSize: 11, color: '#64748B', background: '#F1F5F9', padding: '4px 8px', borderRadius: 999 }}>7 Hari Terakhir</span>
+      </div>
+
+      {grafikHarian.length === 0 ? (
+        <p style={{ color: '#94A3B8', fontSize: 13, textAlign: 'center', padding: 20 }}>Belum ada penjualan.<br/>Transaksi di Kasir dulu, grafiknya langsung muncul di sini.</p>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 180, marginTop: 16, padding: '0 4px', borderBottom: '1px solid #E2E8F0' }}>
+            {grafikHarian.map(g => (
+              <div key={g.tanggal} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#0D9488', marginBottom: 6, textAlign: 'center' }}>
+                  {g.total >= 1000000 ? `Rp ${(g.total / 1000000).toFixed(1)}jt` : `Rp ${(g.total / 1000).toFixed(0)}rb`}
+                </div>
+                <div style={{
+                  width: '100%', maxWidth: 56,
+                  height: `${Math.max((g.total / maxGrafik) * 100, 6)}%`,
+                  background: g.tanggal === hariIni ? '#0D9488' : '#99F6E4',
+                  borderRadius: '10px 10px 0 0',
+                  transition: '0.3s',
+                }} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 8, padding: '0 4px' }}>
+            {grafikHarian.map(g => (
+              <div key={g.tanggal} style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: 11, fontWeight: 700 }}>{formatTglGrafik(g.tanggal)}</div>
+                <div style={{ fontSize: 10, color: '#64748B' }}>{g.jumlah}x trx</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabel detail di bawah grafik, biar angkanya akurat */}
+          <div style={{ marginTop: 16, borderTop: '1px solid #F1F5F9', paddingTop: 12 }}>
+            {[...grafikHarian].reverse().map(g => (
+              <div key={g.tanggal} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F8FAFC', fontSize: 13 }}>
+                <span>{formatTglGrafik(g.tanggal)} {g.tanggal === hariIni ? <span style={{ background: '#D1FAE5', color: '#065F46', padding: '2px 6px', borderRadius: 999, fontSize: 10, fontWeight: 700 }}>HARI INI</span> : ''} • {g.jumlah}x transaksi</span>
+                <b>Rp {g.total.toLocaleString('id-ID')}</b>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+
+    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+      <b>🏆 Obat Paling Laku</b>
+      {obatTerlaris.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada penjualan.</p> : obatTerlaris.map(([nama, qty], i) => (
+        <div key={nama} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>#{i + 1} {nama}</span><b>{qty} terjual</b></div>
+      ))}
+    </div>
+    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+      <b>📋 Transaksi Hari Ini</b>
+      {trxHariIni.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada transaksi hari ini.</p> : trxHariIni.map(t => (
+        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>{t.id} • {t.tanggal}{t.pasien_nama ? ` • ${t.pasien_nama}` : ''}</span><b>Rp {t.total.toLocaleString('id-ID')}</b></div>
+      ))}
+    </div>
+  </div>
+)}
         {halaman === 'kasir' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
             {hutangPO.length > 0 && (
@@ -533,7 +603,7 @@ const formatTglGrafik = (iso) => {
   <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
     <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
 
-    {/* ===== BALANCE UANG - BARU ===== */}
+    {/* ===== BALANCE UANG ===== */}
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
       <div style={{ background: '#F0FDF4', padding: 14, borderRadius: 12 }}>
         <div style={{ fontSize: 11, color: '#64748B' }}>Uang Masuk (Total Bayar)</div>
@@ -578,77 +648,7 @@ const formatTglGrafik = (iso) => {
     </div>
   )}
 
-       {halaman === 'laporan' && (
-  <div>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Omset Hari Ini</div><b style={{ fontSize: 22 }}>Rp {omsetHariIni.toLocaleString('id-ID')}</b></div>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Transaksi Hari Ini</div><b style={{ fontSize: 22 }}>{trxHariIni.length}x</b></div>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Semua Transaksi</div><b style={{ fontSize: 22 }}>{transaksis.length}x</b></div>
-    </div>
-
-    {/* ===== GRAFIK PENJUALAN PER HARI - BARU ===== */}
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <b>📊 Grafik Penjualan Per Hari</b>
-        <span style={{ fontSize: 11, color: '#64748B', background: '#F1F5F9', padding: '4px 8px', borderRadius: 999 }}>7 Hari Terakhir</span>
-      </div>
-
-      {grafikHarian.length === 0 ? (
-        <p style={{ color: '#94A3B8', fontSize: 13, textAlign: 'center', padding: 20 }}>Belum ada penjualan.<br/>Transaksi di Kasir dulu, grafiknya langsung muncul di sini.</p>
-      ) : (
-        <>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 180, marginTop: 16, padding: '0 4px', borderBottom: '1px solid #E2E8F0' }}>
-            {grafikHarian.map(g => (
-              <div key={g.tanggal} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#0D9488', marginBottom: 6, textAlign: 'center' }}>
-                  {g.total >= 1000000 ? `Rp ${(g.total / 1000000).toFixed(1)}jt` : `Rp ${(g.total / 1000).toFixed(0)}rb`}
-                </div>
-                <div style={{
-                  width: '100%', maxWidth: 56,
-                  height: `${Math.max((g.total / maxGrafik) * 100, 6)}%`,
-                  background: g.tanggal === hariIni ? '#0D9488' : '#99F6E4',
-                  borderRadius: '10px 10px 0 0',
-                  transition: '0.3s',
-                }} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 8, padding: '0 4px' }}>
-            {grafikHarian.map(g => (
-              <div key={g.tanggal} style={{ flex: 1, textAlign: 'center' }}>
-                <div style={{ fontSize: 11, fontWeight: 700 }}>{formatTglGrafik(g.tanggal)}</div>
-                <div style={{ fontSize: 10, color: '#64748B' }}>{g.jumlah}x trx</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Tabel detail di bawah grafik, biar angkanya akurat */}
-          <div style={{ marginTop: 16, borderTop: '1px solid #F1F5F9', paddingTop: 12 }}>
-            {[...grafikHarian].reverse().map(g => (
-              <div key={g.tanggal} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F8FAFC', fontSize: 13 }}>
-                <span>{formatTglGrafik(g.tanggal)} {g.tanggal === hariIni ? <span style={{ background: '#D1FAE5', color: '#065F46', padding: '2px 6px', borderRadius: 999, fontSize: 10, fontWeight: 700 }}>HARI INI</span> : ''} • {g.jumlah}x transaksi</span>
-                <b>Rp {g.total.toLocaleString('id-ID')}</b>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
-      <b>🏆 Obat Paling Laku</b>
-      {obatTerlaris.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada penjualan.</p> : obatTerlaris.map(([nama, qty], i) => (
-        <div key={nama} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>#{i + 1} {nama}</span><b>{qty} terjual</b></div>
-      ))}
-    </div>
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
-      <b>📋 Transaksi Hari Ini</b>
-      {trxHariIni.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada transaksi hari ini.</p> : trxHariIni.map(t => (
-        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>{t.id} • {t.tanggal}{t.pasien_nama ? ` • ${t.pasien_nama}` : ''}</span><b>Rp {t.total.toLocaleString('id-ID')}</b></div>
-      ))}
-    </div>
-  </div>
-)}
+      
         <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', marginTop: 20 }}>RuangApotek v2.1 • Data tersimpan di Supabase • Online</p>
       </div>
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 40 }}></div>}
