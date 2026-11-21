@@ -299,7 +299,6 @@ const formatTglGrafik = (iso) => {
   const menu = [
     { id: 'laporan', label: '📊 Laporan', desc: 'Omset hari ini' },
     { id: 'kasir', label: '🛒 Kasir', desc: 'Penjualan' },
-    { id: 'tambah', label: '➕ Tambah Obat', desc: 'Obat baru' },
     { id: 'stok', label: '📦 Kelola Stok', desc: `${obats.length} obat` },
     { id: 'pasien', label: '👤 Pasien', desc: `${listPasien.length} pasien` },
     { id: 'po', label: '📦 PO / Faktur', desc: hutangPO.length ? `${hutangPO.length} belum lunas` : 'Input faktur' },
@@ -488,7 +487,23 @@ const formatTglGrafik = (iso) => {
 
   </div>
 )}
-        
+        {halaman === 'tambah' && (
+  <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
+    <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
+    <label style={{ fontSize: 12, fontWeight: 700 }}>NAMA OBAT</label><input value={formObat.nama} onChange={e => setFormObat({ ...formObat, nama: e.target.value })} placeholder="Contoh: Paracetamol 500mg" style={{ ...inp, margin: '6px 0 12px' }} />
+    <label style={{ fontSize: 12, fontWeight: 700 }}>KATEGORI</label>
+    <select value={formObat.kategori} onChange={e => setFormObat({ ...formObat, kategori: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }}>
+      {['Demam', 'Antibiotik', 'Lambung', 'Luka', 'Vitamin', 'Batuk', 'Radang', 'Lainnya'].map(k => <option key={k}>{k}</option>)}
+    </select>
+    <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>HARGA</label><input value={formObat.harga} onChange={e => setFormObat({ ...formObat, harga: e.target.value.replace(/[^0-9]/g, '') })} placeholder="5000" style={{ ...inp, margin: '6px 0 12px' }} /></div>
+      <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>STOK</label><input value={formObat.stok} onChange={e => setFormObat({ ...formObat, stok: e.target.value.replace(/[^0-9]/g, '') })} placeholder="50" style={{ ...inp, margin: '6px 0 12px' }} /></div>
+    </div>
+    <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label>
+    <input type="month" value={formObat.exp ? (formObat.exp.includes('/') ? (() => { const [b, t] = formObat.exp.split('/'); return `${t}-${b}`; })() : formObat.exp.slice(0, 7)) : ''} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} style={{ ...inp, margin: '6px 0 16px' }} />
+    <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
+  </div>
+)}      
          {halaman === 'stok' && (
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
