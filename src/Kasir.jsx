@@ -416,10 +416,10 @@ const formatTglGrafik = (iso) => {
   </div>
 )}
         {halaman === 'kasir' && (
-  <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
     
     {/* ===== KIRI : LIST OBAT ===== */}
-    <div style={{ flex: 1, minWidth: 0 }}>
+  <div style={{ flex: '1 1 340px', minWidth: 0, width: '100%' }}>
       {hutangPO.length > 0 && (
         <div onClick={() => setHalaman('po')} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', padding: 12, borderRadius: 14, fontSize: 13, color: '#92400E', cursor: 'pointer', marginBottom: 14 }}>
           ⚠️ <b>{hutangPO.length} Faktur belum lunas</b> • Total hutang Rp {totalHutang.toLocaleString('id-ID')} • Klik untuk lihat →
