@@ -26,6 +26,7 @@ const OBAT_AWAL = [
 
 export default function Kasir() {
   const [halaman, setHalaman] = useState('laporan');
+  const [dark, setDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [obats, setObats] = useState([]);
   const [loadingObat, setLoadingObat] = useState(true);
@@ -340,7 +341,12 @@ const formatTglGrafik = (iso) => {
 
       <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+  <button onClick={() => setSidebarOpen(true)} style={{ fontSize: 22, background: 'none', border: 'none', cursor: 'pointer' }}>☰</button>
+  <button onClick={() => setDark(!dark)} style={{ fontSize: 18, background: dark ? '#1e293b' : '#e2e8f0', border: 'none', cursor: 'pointer', borderRadius: 20, padding: '6px 10px' }}>
+    {dark ? '☀️' : '🌙'}
+  </button>
+</div>
           <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
         </div>
 
