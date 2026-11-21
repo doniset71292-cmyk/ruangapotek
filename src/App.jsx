@@ -34,12 +34,12 @@ export default function App() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'white', fontFamily: 'system-ui' }}>
-        <span style={{ fontSize: 13 }}>👋 Halo, <b>{namaApotekLogin || 'Apotek'}</b></span>
+        <span style={{ fontSize: 13 }}>👋 Selamat datang <b>{namaApotekLogin || 'Apotek'}</b>, selamat bekerja!</span>
         <button onClick={async () => { 
           await supabase.auth.signOut();
           localStorage.removeItem('ruangapotek_login'); 
           setHalaman('login'); 
-        }} style={{ background: '#FEF2F2', color: '#DC2626', border: 'none', padding: '8px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Logout</button>
+        }} style={{ background: '#fc3737', color: '#130909', border: 'none', padding: '8px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Logout</button>
       </div>
       <Kasir />
     </div>

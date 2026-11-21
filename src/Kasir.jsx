@@ -307,8 +307,6 @@ const formatTglGrafik = (iso) => {
     { id: 'riwayat', label: '🧾 Riwayat', desc: `${transaksis.length} transaksi` },
   ];
 
-  const inp = { width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.inputBg, color: T.text, outline: 'none', boxSizing: 'border-box', fontSize: 14 };
-  const btnTeal = { background: '#0D9488', color: 'white', border: 'none', padding: '12px 18px', borderRadius: 999, fontWeight: 800, cursor: 'pointer' };
   // ===== DARK MODE THEME =====
   const T = dark ? {
     bg: '#0F172A', card: '#1E293B', card2: '#334155',
@@ -317,12 +315,14 @@ const formatTglGrafik = (iso) => {
     bg: '#F0F9F7', card: 'white', card2: '#F8FAFC',
     text: '#1e293b', muted: '#64748B', border: '#E2E8F0', inputBg: 'white'
   };
+  const inp = { width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.inputBg, color: T.text, outline: 'none', boxSizing: 'border-box', fontSize: 14 };
+  const btnTeal = { background: '#0D9488', color: 'white', border: 'none', padding: '12px 18px', borderRadius: 999, fontWeight: 800, cursor: 'pointer' };
   return (<div style={{ display: 'flex', minHeight: '100vh', background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}>
     
       <div style={{ width: 240, background: T.card, borderRight: `1px solid ${T.border}`, padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 36, height: 36, background: 'white', borderRadius: 999, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#0D9488', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>R</div>
+            <div style={{ width: 36, height: 36, background: T.card2, borderRadius: 999, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#0D9488', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>R</div>
             <div style={{ lineHeight: 1 }}>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5 }}>Ruang</div>
               <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: -0.5, color: '#0D9488' }}>Apotek</div>
@@ -339,38 +339,38 @@ const formatTglGrafik = (iso) => {
             </button>
           ))}
         </div>
-        <div style={{ marginTop: 'auto', background: '#FFFBEB', borderRadius: 12, padding: 12 }}>
-          {/* ===== LOGOUT + DARK MODE - NEMPEL ===== */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            <button onClick={() => supabase.auth.signOut()} style={{ flex: 1, padding: '10px', background: '#EF4444', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 13 }}>
-              Logout
-            </button>
-            <button onClick={() => setDark(!dark)} title="Ganti Mode" style={{ width: 42, height: 42, fontSize: 18, background: dark ? '#334155' : '#E2E8F0', border: 'none', cursor: 'pointer', borderRadius: 10 }}>
-              {dark ? '☀️' : '🌙'}
-            </button>
-          </div>
-          <b style={{ fontSize: 12 }}>⚠️ Obat hampir expired</b>
-          <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => (o.exp || '').includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
+        
+      <div style={{ marginTop: 'auto', background: dark ? '#422006' : '#FFFBEB', color: dark ? '#FDE68A' : '#92400E', borderRadius: 12, padding: 12, border: dark ? '1px solid #92400E' : 'none' }}>
+      <b style={{ fontSize: 12 }}>⚠️ Obat hampir expired</b>
+      <p style={{ fontSize: 12, margin: '6px 0 0', color: dark ? '#FDE68A' : '#1e293b' }}>{obats.filter(o => (o.exp || '').includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
           {hutangPO.length > 0 && <p style={{ fontSize: 12, margin: '8px 0 0', color: '#92400E', fontWeight: 700 }}>💸 Hutang PO: Rp {totalHutang.toLocaleString('id-ID')} ({hutangPO.length} faktur)</p>}
         </div>
       </div>
-
-      <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 90, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
-          <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
-        </div>
+    
+    {/* KIRI: Menu doang */}
+    <button onClick={() => setSidebarOpen(true)} style={{ background: T.card, border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 90, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
+
+    {/* KANAN: Online + Dark Mode NEMPEL */}
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
+      <button onClick={() => setDark(!dark)} title="Ganti Mode" style={{ width: 42, height: 42, fontSize: 18, background: dark ? '#334155' : '#E2E8F0', border: 'none', cursor: 'pointer', borderRadius: 10 }}>
+        {dark ? '☀️' : '🌙'}
+      </button>
+    </div>
+  </div>
 
          {halaman === 'laporan' && (
-  <div>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Omset Hari Ini</div><b style={{ fontSize: 22 }}>Rp {omsetHariIni.toLocaleString('id-ID')}</b></div>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Transaksi Hari Ini</div><b style={{ fontSize: 22 }}>{trxHariIni.length}x</b></div>
-      <div style={{ background: 'white', borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Semua Transaksi</div><b style={{ fontSize: 22 }}>{transaksis.length}x</b></div>
-    </div>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              <div style={{ background: T.card, borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Omset Hari Ini</div><b style={{ fontSize: 22 }}>Rp {omsetHariIni.toLocaleString('id-ID')}</b></div>
+              <div style={{ background: T.card, borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Transaksi Hari Ini</div><b style={{ fontSize: 22 }}>{trxHariIni.length}x</b></div>
+              <div style={{ background: T.card, borderRadius: 16, padding: 16 }}><div style={{ fontSize: 12, color: '#64748B' }}>Total Semua Transaksi</div><b style={{ fontSize: 22 }}>{transaksis.length}x</b></div>
+            </div>
 
     {/* ===== GRAFIK PENJUALAN PER HARI - ===== */}
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+    <div style={{ background: T.card, borderRadius: 16, padding: 16, marginTop: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <b>📊 Grafik Penjualan Per Hari</b>
         <span style={{ fontSize: 11, color: '#64748B', background: '#F1F5F9', padding: '4px 8px', borderRadius: 999 }}>7 Hari Terakhir</span>
@@ -418,13 +418,13 @@ const formatTglGrafik = (iso) => {
       )}
     </div>
 
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+    <div style={{ background: T.card, borderRadius: 16, padding: 16, marginTop: 12 }}>
       <b>🏆 Obat Paling Laku</b>
       {obatTerlaris.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada penjualan.</p> : obatTerlaris.map(([nama, qty], i) => (
         <div key={nama} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>#{i + 1} {nama}</span><b>{qty} terjual</b></div>
       ))}
     </div>
-    <div style={{ background: 'white', borderRadius: 16, padding: 16, marginTop: 12 }}>
+    <div style={{ background: T.card, borderRadius: 16, padding: 16, marginTop: 12 }}>
       <b>📋 Transaksi Hari Ini</b>
       {trxHariIni.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13 }}>Belum ada transaksi hari ini.</p> : trxHariIni.map(t => (
         <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}><span>{t.id} • {t.tanggal}{t.pasien_nama ? ` • ${t.pasien_nama}` : ''}</span><b>Rp {t.total.toLocaleString('id-ID')}</b></div>
@@ -448,7 +448,7 @@ const formatTglGrafik = (iso) => {
         <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
           {obatTampil.map(o => (
-            <button key={o.id} onClick={() => tambahKeCart(o)} style={{ textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 14, padding: 12, cursor: 'pointer' }}>
+            <button key={o.id} onClick={() => tambahKeCart(o)} style={{ textAlign: 'left', background: T.card, border: '1px solid #E2E8F0', borderRadius: 14, padding: 12, cursor: 'pointer' }}>
               <span style={{ fontSize: 11, background: '#F1F5F9', padding: '3px 8px', borderRadius: 999 }}>{o.kategori}</span>
               <div style={{ fontWeight: 700, marginTop: 8, fontSize: 14 }}>{o.nama}</div>
               <div style={{ fontSize: 11, color: '#64748B' }}>Stok: {o.stok} • Exp: {o.exp}</div>
@@ -608,7 +608,7 @@ const formatTglGrafik = (iso) => {
                   </div>
                 </div>
               ))}
-              <button onClick={() => setPoForm({ ...poForm, items: [...poForm.items, { nama: '', qty: 1, hargaBeli: '', exp: '' }] })} style={{ width: '100%', padding: 10, border: '1px dashed #0D9488', background: 'white', color: '#0D9488', borderRadius: 999, fontWeight: 700, cursor: 'pointer', marginTop: 10 }}>+ Tambah Obat Lagi</button>
+              <button onClick={() => setPoForm({ ...poForm, items: [...poForm.items, { nama: '', qty: 1, hargaBeli: '', exp: '' }] })} style={{ width: '100%', padding: 10, border: '1px dashed #0D9488', background: T.card, color: '#0D9488', borderRadius: 999, fontWeight: 700, cursor: 'pointer', marginTop: 10 }}>+ Tambah Obat Lagi</button>
               <button onClick={simpanPO} style={{ ...btnTeal, width: '100%', marginTop: 12 }}>Simpan & Tambah Stok →</button>
             </div>
           </div>
@@ -653,7 +653,7 @@ const formatTglGrafik = (iso) => {
     </p>
 
     {transaksis.length === 0 ? <p style={{ color: '#94A3B8' }}>Belum ada transaksi.</p> : transaksis.map(t => (
-      <button key={t.id} onClick={() => setDetailTransaksi(t)} style={{ width: '100%', textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+      <button key={t.id} onClick={() => setDetailTransaksi(t)} style={{ width: '100%', textAlign: 'left', background: T.card, border: '1px solid #E2E8F0', borderRadius: 12, padding: 12, marginBottom: 8, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
         <span><b>{t.id}</b><div style={{ fontSize: 12, color: '#64748B' }}>{t.tanggal} • {t.items.reduce((a, i) => a + i.qty, 0)} item {t.pasien_nama ? `• ${t.pasien_nama}` : ''}</div>
         <div style={{ fontSize: 11, color: '#64748B' }}>Bayar Rp {(t.bayar || 0).toLocaleString('id-ID')} • Kembali Rp {(t.kembalian || 0).toLocaleString('id-ID')}</div>
         </span>
@@ -663,7 +663,7 @@ const formatTglGrafik = (iso) => {
 
       {detailTransaksi && (
         <div style={{ background: '#F8FAFC', borderRadius: 14, padding: 16, marginTop: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><b>Struk {detailTransaksi.id}</b><button onClick={() => setDetailTransaksi(null)} style={{ border: 'none', background: 'white', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>✕ Tutup</button></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><b>Struk {detailTransaksi.id}</b><button onClick={() => setDetailTransaksi(null)} style={{ border: 'none', background: T.card, borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>✕ Tutup</button></div>
           <p style={{ fontSize: 12, color: '#64748B' }}>{detailTransaksi.tanggal}{detailTransaksi.pasien_nama ? ` • ${detailTransaksi.pasien_nama}` : ''}</p>
           {detailTransaksi.items.map((i, idx) => <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, padding: '6px 0', borderBottom: '1px solid #E2E8F0' }}><span>{i.nama} x{i.qty}</span><span>Rp {(i.harga * i.qty).toLocaleString('id-ID')}</span></div>)}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}><span>Total Belanja</span><b>Rp {detailTransaksi.total.toLocaleString('id-ID')}</b></div>
