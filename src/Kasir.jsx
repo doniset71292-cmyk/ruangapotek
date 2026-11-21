@@ -417,82 +417,77 @@ const formatTglGrafik = (iso) => {
   </div>
 )}
         {halaman === 'kasir' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
-            {hutangPO.length > 0 && (
-              <div onClick={() => setHalaman('po')} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', padding: 12, borderRadius: 14, fontSize: 13, color: '#92400E', cursor: 'pointer' }}>
-                ⚠️ <b>{hutangPO.length} Faktur belum lunas</b> • Total hutang Rp {totalHutang.toLocaleString('id-ID')} • Klik untuk lihat →
-              </div>
-            )}
-            <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-              <h2 style={{ margin: '0 0 12px' }}>Kasir</h2>
-              <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
-              <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
-                {obatTampil.map(o => (
-                  <button key={o.id} onClick={() => tambahKeCart(o)} style={{ textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 14, padding: 12, cursor: 'pointer' }}>
-                    <span style={{ fontSize: 11, background: '#F1F5F9', padding: '3px 8px', borderRadius: 999 }}>{o.kategori}</span>
-                    <div style={{ fontWeight: 700, marginTop: 8, fontSize: 14 }}>{o.nama}</div>
-                    <div style={{ fontSize: 11, color: '#64748B' }}>Stok: {o.stok} • Exp: {o.exp}</div>
-                    <div style={{ color: '#0D9488', fontWeight: 800, marginTop: 4 }}>Rp {o.harga.toLocaleString('id-ID')}</div>
-                  </button>
-                ))}
-              </div>
+  <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+    
+    {/* ===== KIRI : LIST OBAT ===== */}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      {hutangPO.length > 0 && (
+        <div onClick={() => setHalaman('po')} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', padding: 12, borderRadius: 14, fontSize: 13, color: '#92400E', cursor: 'pointer', marginBottom: 14 }}>
+          ⚠️ <b>{hutangPO.length} Faktur belum lunas</b> • Total hutang Rp {totalHutang.toLocaleString('id-ID')} • Klik untuk lihat →
+        </div>
+      )}
+      <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+        <h2 style={{ margin: '0 0 12px' }}>Kasir</h2>
+        <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
+        <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+          {obatTampil.map(o => (
+            <button key={o.id} onClick={() => tambahKeCart(o)} style={{ textAlign: 'left', background: 'white', border: '1px solid #E2E8F0', borderRadius: 14, padding: 12, cursor: 'pointer' }}>
+              <span style={{ fontSize: 11, background: '#F1F5F9', padding: '3px 8px', borderRadius: 999 }}>{o.kategori}</span>
+              <div style={{ fontWeight: 700, marginTop: 8, fontSize: 14 }}>{o.nama}</div>
+              <div style={{ fontSize: 11, color: '#64748B' }}>Stok: {o.stok} • Exp: {o.exp}</div>
+              <div style={{ color: '#0D9488', fontWeight: 800, marginTop: 4 }}>Rp {o.harga.toLocaleString('id-ID')}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* ===== KANAN : KERANJANG + KASIR - NEMPEL ===== */}
+    <div style={{ width: 360, flexShrink: 0, position: 'sticky', top: 14, maxHeight: 'calc(100vh - 28px)', overflowY: 'auto' }}>
+      <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+        <b>🧾 Keranjang ({cart.reduce((a, c) => a + c.qty, 0)})</b>
+
+        {/* Yang di-scroll cuma isi keranjangnya aja */}
+        <div style={{ maxHeight: 260, overflowY: 'auto', paddingRight: 4 }}>
+          {cart.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13, textAlign: 'center' }}>Belum ada obat dipilih.<br/>Klik obat di kiri.</p> : cart.map(c => (
+            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}>
+              <span>{c.nama} <span style={{ color: '#94A3B8' }}>x{c.qty}</span></span>
+              <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <b>Rp {(c.harga * c.qty).toLocaleString('id-ID')}</b>
+                <button onClick={() => setCart(cart.filter(x => x.id !== c.id))} style={{ border: 'none', background: '#FEF2F2', borderRadius: 999, cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+              </span>
             </div>
-            <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-              <b>🧾 Keranjang ({cart.reduce((a, c) => a + c.qty, 0)})</b>
-              {cart.length === 0 ? <p style={{ color: '#94A3B8', fontSize: 13, textAlign: 'center' }}>Belum ada obat dipilih.<br/>Klik obat di atas.</p> : cart.map(c => (
-                <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: 14 }}>
-                  <span>{c.nama} <span style={{ color: '#94A3B8' }}>x{c.qty}</span></span>
-                  <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <b>Rp {(c.harga * c.qty).toLocaleString('id-ID')}</b>
-                    <button onClick={() => setCart(cart.filter(x => x.id !== c.id))} style={{ border: 'none', background: '#FEF2F2', borderRadius: 999, cursor: 'pointer', padding: '4px 8px' }}>✕</button>
-                  </span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, fontSize: 18, fontWeight: 800 }}><span>Total</span><span>Rp {total.toLocaleString('id-ID')}</span></div>
-              <div style={{ background: '#F0FDFA', border: '1px solid #CCFBF1', borderRadius: 12, padding: 12, marginTop: 12 }}>
-                <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>👤 DATA PASIEN <span style={{ fontWeight: 400, color: '#64748B' }}>(Opsional)</span></div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <input placeholder="Ketik NIK 16 digit..." value={nik} onChange={e => cariPasien(e.target.value)} style={{ ...inp, flex: 1, minWidth: 180 }} />
-                  <input placeholder="Nama Pasien" value={namaPasien} onChange={e => setNamaPasien(e.target.value)} style={{ ...inp, flex: 1, minWidth: 180 }} />
-                </div>
-                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                  <input placeholder="No HP (opsional)" value={noHp} onChange={e => setNoHp(e.target.value)} style={{ ...inp, flex: 1, minWidth: 180 }} />
-                  <input placeholder="Alergi (opsional)" value={alergi} onChange={e => setAlergi(e.target.value)} style={{ ...inp, flex: 1, minWidth: 180 }} />
-                </div>
-                {pasienLama && <div style={{ fontSize: 12, color: '#0D9488', marginTop: 8 }}>✅ Pasien lama ketemu: {pasienLama.nama}</div>}
-                {nik.length === 16 && !pasienLama && <div style={{ fontSize: 12, color: '#D97706', marginTop: 8 }}>🆕 Pasien baru, akan disimpan otomatis</div>}
-              </div>
-              <input value={bayar} onChange={e => setBayar(e.target.value.replace(/[^0-9]/g, ''))} placeholder="Total bayar, contoh: 50000" style={{ ...inp, marginTop: 10, borderRadius: 999 }} />
-              {bayar && <p style={{ fontSize: 13 }}>Kembalian: <b style={{ color: kembalian < 0 ? '#DC2626' : '#15803D' }}>Rp {kembalian.toLocaleString('id-ID')}</b></p>}
-              <button onClick={checkout} style={{ ...btnTeal, width: '100%', marginTop: 8, padding: 14 }}>BAYAR & CETAK RESEP →</button>
-              {strukTerakhir && (
-                <div style={{ background: '#F0FDF4', padding: 12, borderRadius: 12, marginTop: 12, fontSize: 13 }}>
-                  <b>✅ Berhasil! {strukTerakhir.id}</b><br/>Total Rp {strukTerakhir.total.toLocaleString('id-ID')} • Kembalian Rp {strukTerakhir.kembalian.toLocaleString('id-ID')}
-                </div>
-              )}
-            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, fontSize: 18, fontWeight: 800 }}><span>Total</span><span>Rp {total.toLocaleString('id-ID')}</span></div>
+        <div style={{ background: '#F0FDFA', border: '1px solid #CCFBF1', borderRadius: 12, padding: 12, marginTop: 12 }}>
+          <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 8 }}>👤 DATA PASIEN <span style={{ fontWeight: 400, color: '#64748B' }}>(Opsional)</span></div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <input placeholder="Ketik NIK 16 digit..." value={nik} onChange={e => cariPasien(e.target.value)} style={{ ...inp, flex: 1, minWidth: 140 }} />
+            <input placeholder="Nama Pasien" value={namaPasien} onChange={e => setNamaPasien(e.target.value)} style={{ ...inp, flex: 1, minWidth: 140 }} />
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+            <input placeholder="No HP (opsional)" value={noHp} onChange={e => setNoHp(e.target.value)} style={{ ...inp, flex: 1, minWidth: 140 }} />
+            <input placeholder="Alergi (opsional)" value={alergi} onChange={e => setAlergi(e.target.value)} style={{ ...inp, flex: 1, minWidth: 140 }} />
+          </div>
+          {pasienLama && <div style={{ fontSize: 12, color: '#0D9488', marginTop: 8 }}>✅ Pasien lama ketemu: {pasienLama.nama}</div>}
+          {nik.length === 16 && !pasienLama && <div style={{ fontSize: 12, color: '#D97706', marginTop: 8 }}>🆕 Pasien baru, akan disimpan otomatis</div>}
+        </div>
+        <input value={bayar} onChange={e => setBayar(e.target.value.replace(/[^0-9]/g, ''))} placeholder="Total bayar, contoh: 50000" style={{ ...inp, marginTop: 10, borderRadius: 999 }} />
+        {bayar && <p style={{ fontSize: 13 }}>Kembalian: <b style={{ color: kembalian < 0 ? '#DC2626' : '#15803D' }}>Rp {kembalian.toLocaleString('id-ID')}</b></p>}
+        <button onClick={checkout} style={{ ...btnTeal, width: '100%', marginTop: 8, padding: 14 }}>BAYAR & CETAK RESEP →</button>
+        {strukTerakhir && (
+          <div style={{ background: '#F0FDF4', padding: 12, borderRadius: 12, marginTop: 12, fontSize: 13 }}>
+            <b>✅ Berhasil! {strukTerakhir.id}</b><br/>Total Rp {strukTerakhir.total.toLocaleString('id-ID')} • Kembalian Rp {strukTerakhir.kembalian.toLocaleString('id-ID')}
           </div>
         )}
+      </div>
+    </div>
 
-        {halaman === 'tambah' && (
-          <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
-            <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>NAMA OBAT</label><input value={formObat.nama} onChange={e => setFormObat({ ...formObat, nama: e.target.value })} placeholder="Contoh: Paracetamol 500mg" style={{ ...inp, margin: '6px 0 12px' }} />
-            <label style={{ fontSize: 12, fontWeight: 700 }}>KATEGORI</label>
-            <select value={formObat.kategori} onChange={e => setFormObat({ ...formObat, kategori: e.target.value })} style={{ ...inp, margin: '6px 0 12px' }}>
-              {['Demam', 'Antibiotik', 'Lambung', 'Luka', 'Vitamin', 'Batuk', 'Radang', 'Lainnya'].map(k => <option key={k}>{k}</option>)}
-            </select>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>HARGA</label><input value={formObat.harga} onChange={e => setFormObat({ ...formObat, harga: e.target.value.replace(/[^0-9]/g, '') })} placeholder="5000" style={{ ...inp, margin: '6px 0 12px' }} /></div>
-              <div style={{ flex: 1 }}><label style={{ fontSize: 12, fontWeight: 700 }}>STOK</label><input value={formObat.stok} onChange={e => setFormObat({ ...formObat, stok: e.target.value.replace(/[^0-9]/g, '') })} placeholder="50" style={{ ...inp, margin: '6px 0 12px' }} /></div>
-            </div>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>TANGGAL EXPIRED</label>
-            <input type="month" value={formObat.exp ? (formObat.exp.includes('/') ? (() => { const [b, t] = formObat.exp.split('/'); return `${t}-${b}`; })() : formObat.exp.slice(0, 7)) : ''} onChange={e => setFormObat({ ...formObat, exp: e.target.value })} style={{ ...inp, margin: '6px 0 16px' }} />
-            <button onClick={simpanObatBaru} style={{ ...btnTeal, width: '100%' }}>{editId ? 'Simpan Perubahan' : 'Simpan Obat Baru →'}</button>
-          </div>
-        )}
-
+  </div>
+)}
         
          {halaman === 'stok' && (
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
