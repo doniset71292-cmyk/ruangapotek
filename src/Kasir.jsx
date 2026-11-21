@@ -33,6 +33,7 @@ export default function Kasir() {
   const [transaksis, setTransaksis] = useState([]);
   const [cart, setCart] = useState([]);
   const [cari, setCari] = useState('');
+  const [cariStok, setCariStok] = useState('');
   const [bayar, setBayar] = useState('');
   const [strukTerakhir, setStrukTerakhir] = useState(null);
   const [detailTransaksi, setDetailTransaksi] = useState(null);
@@ -382,21 +383,51 @@ export default function Kasir() {
           </div>
         )}
 
-        {halaman === 'stok' && (
-          <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><h2 style={{ margin: 0 }}>📦 Kelola Stok Obat</h2><button onClick={() => setHalaman('tambah')} style={btnTeal}>+ Obat Baru</button></div>
-            {obats.map(o => (
-              <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #F1F5F9', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 180 }}><b style={{ fontSize: 14 }}>{o.nama}</b><div style={{ fontSize: 12, color: '#64748B' }}>{o.kategori} • Exp: {o.exp} • Rp {o.harga.toLocaleString('id-ID')}</div></div>
-                <span style={{ fontWeight: 800, fontSize: 14, background: o.stok < 20 ? '#FEF3C7' : '#F0FDF4', padding: '6px 10px', borderRadius: 999 }}>Stok: {o.stok}</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => { setEditId(o.id); setFormObat({ nama: o.nama, kategori: o.kategori, harga: String(o.harga), stok: String(o.stok), exp: o.exp }); setHalaman('tambah'); }} style={{ background: '#EFF6FF', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>✏️ Edit</button>
-                  <button onClick={() => hapusObat(o)} style={{ background: '#FEF2F2', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>🗑️</button>
+        
+         {halaman === 'stok' && (
+            <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <h2 style={{ margin: 0 }}>📦 Kelola Stok Obat</h2>
+                <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260, justifyContent: 'flex-end' }}>
+                  {/* ===== TOMBOL CARI - BARU ===== */}
+                  <input
+                    value={cariStok}
+                    onChange={e => setCariStok(e.target.value)}
+                    placeholder="🔍 Cari obat..."
+                    style={{ ...inp, borderRadius: 999, maxWidth: 240, padding: '10px 14px' }}
+                  />
+                  <button onClick={() => setHalaman('tambah')} style={{ ...btnTeal, whiteSpace: 'nowrap' }}>+ Obat Baru</button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              <p style={{ fontSize: 12, color: '#64748B' }}>
+                {cariStok
+                  ? `Hasil cari "${cariStok}": ${obats.filter(o => o.nama.toLowerCase().includes(cariStok.toLowerCase())).length} obat`
+                  : `Total ${obats.length} obat • Stok menipis (<20) warna kuning, Expired 2026 warna merah`}
+              </p>
+              {cariStok && (
+                <button onClick={() => setCariStok('')} style={{ background: '#F1F5F9', border: 'none', padding: '6px 12px', borderRadius: 999, fontSize: 12, cursor: 'pointer', marginBottom: 8 }}>
+                  ✕ Hapus filter "{cariStok}"
+                </button>
+              )}
+              {obats
+                .filter(o => o.nama.toLowerCase().includes(cariStok.toLowerCase()))
+                .map(o => (
+                  <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #F1F5F9', gap: 10, flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 180 }}><b style={{ fontSize: 14 }}>{o.nama}</b><div style={{ fontSize: 12, color: '#64748B' }}>{o.kategori} • Exp: {o.exp} • Rp {o.harga.toLocaleString('id-ID')}</div></div>
+                    <span style={{ fontWeight: 800, fontSize: 14, background: o.stok < 20 ? '#FEF3C7' : '#F0FDF4', padding: '6px 10px', borderRadius: 999 }}>Stok: {o.stok}</span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button onClick={() => { setEditId(o.id); setFormObat({ nama: o.nama, kategori: o.kategori, harga: String(o.harga), stok: String(o.stok), exp: o.exp }); setHalaman('tambah'); }} style={{ background: '#EFF6FF', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>✏️ Edit</button>
+                      <button onClick={() => hapusObat(o)} style={{ background: '#FEF2F2', border: 'none', padding: '8px 12px', borderRadius: 999, cursor: 'pointer', fontWeight: 700 }}>🗑️</button>
+                    </div>
+                  </div>
+                ))}
+              {obats.filter(o => o.nama.toLowerCase().includes(cariStok.toLowerCase())).length === 0 && (
+                <p style={{ color: '#94A3B8', fontSize: 13, textAlign: 'center', padding: 20 }}>
+                  {cariStok ? `Gak ada obat "${cariStok}"` : 'Belum ada obat.'}
+                </p>
+              )}
+            </div>
+          )}
 
         {halaman === 'pasien' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
