@@ -151,10 +151,32 @@ export default function Kasir() {
     if (nik) {
       if (nik.length !== 16) return alert('NIK harus 16 digit!');
       if (!namaPasien) return alert('Isi nama pasien dulu!');
-      const { error: errPasien } = await supabase.from('pasien').upsert({
-        nik: nik, nama: namaPasien, no_hp: noHp || null, alergi: alergi || null, apotek_id: user.id,
-      }, { onConflict: 'nik' });
-      if (errPasien) return alert('Gagal simpan pasien: ' + errPasien.message);
+      // FIX: Jangan pakai upsert, karena upsert nyangkut ke NIK apotek lain & kena RLS.
+// Cek dulu, pasien ini udah ada di APOTEK INI apa belum?
+const { data: pasienAda } = await supabase
+  .from('pasien')
+  .select('id')
+  .eq('nik', nik)
+  .eq('apotek_id', user.id)
+  .maybeSingle();
+
+let errPasien = null;
+if (pasienAda) {
+  // Kalau udah ada di apotek ini, update aja
+  const { error } = await supabase
+    .from('pasien')
+    .update({ nama: namaPasien, no_hp: noHp || null, alergi: alergi || null })
+    .eq('nik', nik)
+    .eq('apotek_id', user.id);
+  errPasien = error;
+} else {
+  // Kalau belum ada, insert baru
+  const { error } = await supabase
+    .from('pasien')
+    .insert([{ nik: nik, nama: namaPasien, no_hp: noHp || null, alergi: alergi || null, apotek_id: user.id }]);
+  errPasien = error;
+}
+if (errPasien) return alert('Gagal simpan pasien: ' + errPasien.message);
       loadPasien();
     }
 
