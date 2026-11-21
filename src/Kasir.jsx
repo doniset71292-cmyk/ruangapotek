@@ -307,12 +307,19 @@ const formatTglGrafik = (iso) => {
     { id: 'riwayat', label: '🧾 Riwayat', desc: `${transaksis.length} transaksi` },
   ];
 
-  const inp = { width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid #E2E8F0', outline: 'none', boxSizing: 'border-box', fontSize: 14 };
+  const inp = { width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.inputBg, color: T.text, outline: 'none', boxSizing: 'border-box', fontSize: 14 };
   const btnTeal = { background: '#0D9488', color: 'white', border: 'none', padding: '12px 18px', borderRadius: 999, fontWeight: 800, cursor: 'pointer' };
-
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F0F9F7', fontFamily: 'system-ui, sans-serif', color: '#1e293b' }}>
-      <div style={{ width: 240, background: 'white', borderRight: '1px solid #E2E8F0', padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
+  // ===== DARK MODE THEME =====
+  const T = dark ? {
+    bg: '#0F172A', card: '#1E293B', card2: '#334155',
+    text: 'white', muted: '#94A3B8', border: '#334155', inputBg: '#0F172A'
+  } : {
+    bg: '#F0F9F7', card: 'white', card2: '#F8FAFC',
+    text: '#1e293b', muted: '#64748B', border: '#E2E8F0', inputBg: 'white'
+  };
+  return (<div style={{ display: 'flex', minHeight: '100vh', background: T.bg, fontFamily: 'system-ui, sans-serif', color: T.text }}>
+    
+      <div style={{ width: 240, background: T.card, borderRight: `1px solid ${T.border}`, padding: 16, position: 'fixed', top: 0, bottom: 0, left: sidebarOpen ? 0 : -260, zIndex: 50, transition: '0.2s', boxShadow: '0 0 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 36, height: 36, background: 'white', borderRadius: 999, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#0D9488', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>R</div>
@@ -333,6 +340,15 @@ const formatTglGrafik = (iso) => {
           ))}
         </div>
         <div style={{ marginTop: 'auto', background: '#FFFBEB', borderRadius: 12, padding: 12 }}>
+          {/* ===== LOGOUT + DARK MODE - NEMPEL ===== */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button onClick={() => supabase.auth.signOut()} style={{ flex: 1, padding: '10px', background: '#EF4444', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 800, fontSize: 13 }}>
+              Logout
+            </button>
+            <button onClick={() => setDark(!dark)} title="Ganti Mode" style={{ width: 42, height: 42, fontSize: 18, background: dark ? '#334155' : '#E2E8F0', border: 'none', cursor: 'pointer', borderRadius: 10 }}>
+              {dark ? '☀️' : '🌙'}
+            </button>
+          </div>
           <b style={{ fontSize: 12 }}>⚠️ Obat hampir expired</b>
           <p style={{ fontSize: 12, margin: '6px 0 0' }}>{obats.filter(o => (o.exp || '').includes('2026')).length} obat exp 2026. Cek di Kelola Stok.</p>
           {hutangPO.length > 0 && <p style={{ fontSize: 12, margin: '8px 0 0', color: '#92400E', fontWeight: 700 }}>💸 Hutang PO: Rp {totalHutang.toLocaleString('id-ID')} ({hutangPO.length} faktur)</p>}
@@ -341,12 +357,7 @@ const formatTglGrafik = (iso) => {
 
       <div style={{ flex: 1, marginLeft: 0, width: '100%', padding: 14, maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-  <button onClick={() => setSidebarOpen(true)} style={{ fontSize: 22, background: 'none', border: 'none', cursor: 'pointer' }}>☰</button>
-  <button onClick={() => setDark(!dark)} style={{ fontSize: 18, background: dark ? '#1e293b' : '#e2e8f0', border: 'none', cursor: 'pointer', borderRadius: 20, padding: '6px 10px' }}>
-    {dark ? '☀️' : '🌙'}
-  </button>
-</div>
+          <button onClick={() => setSidebarOpen(true)} style={{ background: 'white', border: '1px solid #E2E8F0', padding: '10px 14px', borderRadius: 90, cursor: 'pointer', fontWeight: 700 }}>☰ Menu</button>
           <span style={{ background: '#D1FAE5', color: '#065F46', padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>● Online</span>
         </div>
 
@@ -431,7 +442,7 @@ const formatTglGrafik = (iso) => {
           ⚠️ <b>{hutangPO.length} Faktur belum lunas</b> • Total hutang Rp {totalHutang.toLocaleString('id-ID')} • Klik untuk lihat →
         </div>
       )}
-      <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+      <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>Kasir</h2>
         <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
         <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
@@ -450,7 +461,7 @@ const formatTglGrafik = (iso) => {
 
     {/* ===== KANAN : KERANJANG + KASIR - NEMPEL ===== */}
     <div style={{ width: 360, flexShrink: 0, position: 'sticky', top: 14, maxHeight: 'calc(100vh - 28px)', overflowY: 'auto' }}>
-      <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+      <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
         <b>🧾 Keranjang ({cart.reduce((a, c) => a + c.qty, 0)})</b>
 
         {/* Yang di-scroll cuma isi keranjangnya aja */}
@@ -494,7 +505,7 @@ const formatTglGrafik = (iso) => {
   </div>
 )}
         {halaman === 'tambah' && (
-  <div style={{ background: 'white', borderRadius: 18, padding: 20, maxWidth: 520 }}>
+  <div style={{ background: T.card, borderRadius: 18, padding: 20, maxWidth: 520 }}>
     <h2 style={{ marginTop: 0 }}>{editId ? '✏️ Edit Obat' : '➕ Tambah Obat Baru'}</h2>
     <label style={{ fontSize: 12, fontWeight: 700 }}>NAMA OBAT</label><input value={formObat.nama} onChange={e => setFormObat({ ...formObat, nama: e.target.value })} placeholder="Contoh: Paracetamol 500mg" style={{ ...inp, margin: '6px 0 12px' }} />
     <label style={{ fontSize: 12, fontWeight: 700 }}>KATEGORI</label>
@@ -511,7 +522,7 @@ const formatTglGrafik = (iso) => {
   </div>
 )}      
          {halaman === 'stok' && (
-            <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+            <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>📦 Kelola Stok Obat</h2>
                 <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260, justifyContent: 'flex-end' }}>
@@ -556,7 +567,7 @@ const formatTglGrafik = (iso) => {
           )}
 
         {halaman === 'pasien' && (
-          <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+          <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
             <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>👤 Daftar Pasien</h2>
             <input value={cariPasienInput} onChange={e => setCariPasienInput(e.target.value)} placeholder="🔍 Cari NIK / Nama pasien..." style={{ ...inp, borderRadius: 999, marginBottom: 12 }} />
             {listPasien.filter(p => (p.nama || '').toLowerCase().includes(cariPasienInput.toLowerCase()) || (p.nik || '').includes(cariPasienInput)).map(p => (
@@ -570,7 +581,7 @@ const formatTglGrafik = (iso) => {
 
         {halaman === 'po' && (
           <div>
-            <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
+            <div style={{ background: T.card, borderRadius: 18, padding: 16, marginTop: 12 }}>
               <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900}}>📦 Input Faktur Baru</h2>
               <label style={{ fontSize: 12, fontWeight: 700 }}>NO. FAKTUR</label>
               <input value={poForm.noFaktur} onChange={e => setPoForm({ ...poForm, noFaktur: e.target.value })} placeholder="Contoh: FK-INV-8821" style={{ ...inp, margin: '6px 0 12px' }} />
@@ -604,7 +615,7 @@ const formatTglGrafik = (iso) => {
         )}
 
         {halaman === 'suhu' && (
-          <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+          <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
             <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900}}>🌡️ Laporan Suhu Harian</h2>
             {logSuhu.length === 0 ? <p>Belum ada data suhu</p> : logSuhu.map((d, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F1F5F9' }}>
@@ -616,7 +627,7 @@ const formatTglGrafik = (iso) => {
         )}
 
         {halaman === 'riwayat' && (
-  <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
+  <div style={{ background: T.card, borderRadius: 18, padding: 16 }}>
     <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900}}>🧾 Rincian Riwayat Transaksi</h2>
 
     {/* ===== BALANCE UANG ===== */}
