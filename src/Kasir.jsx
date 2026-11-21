@@ -426,7 +426,7 @@ const formatTglGrafik = (iso) => {
         </div>
       )}
       <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-        <h2 style={{ margin: '0 0 12px' }}>Kasir</h2>
+        <h2 style={{ margin: '0 0 12px', fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>Kasir</h2>
         <input value={cari} onChange={e => setCari(e.target.value)} placeholder="🔍 Cari obat... paracetamol" style={{ ...inp, borderRadius: 999, borderColor: '#99F6E4' }} />
         <p style={{ fontSize: 12, color: '#64748B' }}>{loadingObat ? 'Loading dari Supabase...' : `${obatTampil.length} obat ditemukan • Klik obat untuk masuk keranjang`}</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
@@ -507,7 +507,7 @@ const formatTglGrafik = (iso) => {
          {halaman === 'stok' && (
             <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0 }}>📦 Kelola Stok Obat</h2>
+                <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>📦 Kelola Stok Obat</h2>
                 <div style={{ display: 'flex', gap: 8, flex: 1, minWidth: 260, justifyContent: 'flex-end' }}>
                   {/* ===== TOMBOL CARI - BARU ===== */}
                   <input
@@ -551,7 +551,7 @@ const formatTglGrafik = (iso) => {
 
         {halaman === 'pasien' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-            <h2 style={{ marginTop: 0 }}>👤 Daftar Pasien</h2>
+            <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.5 }}>👤 Daftar Pasien</h2>
             <input value={cariPasienInput} onChange={e => setCariPasienInput(e.target.value)} placeholder="🔍 Cari NIK / Nama pasien..." style={{ ...inp, borderRadius: 999, marginBottom: 12 }} />
             {listPasien.filter(p => (p.nama || '').toLowerCase().includes(cariPasienInput.toLowerCase()) || (p.nik || '').includes(cariPasienInput)).map(p => (
               <div key={p.nik} style={{ border: '1px solid #F1F5F9', borderRadius: 12, padding: 12, marginBottom: 8 }}>
@@ -565,7 +565,7 @@ const formatTglGrafik = (iso) => {
         {halaman === 'po' && (
           <div>
             <div style={{ background: 'white', borderRadius: 18, padding: 16, marginTop: 12 }}>
-              <h2 style={{ marginTop: 0 }}>📦 Input Faktur Baru</h2>
+              <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900}}>📦 Input Faktur Baru</h2>
               <label style={{ fontSize: 12, fontWeight: 700 }}>NO. FAKTUR</label>
               <input value={poForm.noFaktur} onChange={e => setPoForm({ ...poForm, noFaktur: e.target.value })} placeholder="Contoh: FK-INV-8821" style={{ ...inp, margin: '6px 0 12px' }} />
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -599,7 +599,7 @@ const formatTglGrafik = (iso) => {
 
         {halaman === 'suhu' && (
           <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-            <h2 style={{ margin: 0 }}>🌡️ Laporan Suhu Harian</h2>
+            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900}}>🌡️ Laporan Suhu Harian</h2>
             {logSuhu.length === 0 ? <p>Belum ada data suhu</p> : logSuhu.map((d, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F1F5F9' }}>
                 <div><b>{d.ruangan}</b><div style={{ fontSize: 12, color: '#64748B' }}>{d.tanggal} • {d.jam} • {d.nama}</div></div>
@@ -611,7 +611,7 @@ const formatTglGrafik = (iso) => {
 
         {halaman === 'riwayat' && (
   <div style={{ background: 'white', borderRadius: 18, padding: 16 }}>
-    <h2 style={{ marginTop: 0 }}>🧾 Rincian Riwayat Transaksi</h2>
+    <h2 style={{ marginTop: 0, fontSize: 24, fontWeight: 900}}>🧾 Rincian Riwayat Transaksi</h2>
 
     {/* ===== BALANCE UANG ===== */}
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 16 }}>
